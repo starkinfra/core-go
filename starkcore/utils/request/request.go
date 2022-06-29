@@ -7,12 +7,11 @@ import (
 	"core-go/starkcore/user/users"
 	"core-go/starkcore/utils/checks"
 	"core-go/starkcore/utils/hosts"
-	"encoding/json"
 	"fmt"
 	"github.com/starkbank/ecdsa-go/ellipticcurve/ecdsa"
 	"internal/goversion"
+	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
 )
@@ -22,13 +21,20 @@ type Response struct {
 	Content string
 }
 
-func GetJson(response string, target interface{}) error.Error {
-	return json.NewDecoder(response).Decode(target)
+func GetJson(response http.Request) string {
+	resBody, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		fmt.Printf("client: could not read response body: %s\n", err)
+	}
+	fmt.Printf(string(resBody))
+
+	return response.Referer()
 }
 
-func Fetch(host string, sdkVersion string, user string, method string, path string, payload string, apiVersion string, query string) []byte {
+func Fetch(host string, sdkVersion string, user users.User, method string, path string, payload io.Reader, apiVersion string, query string) *http.Request {
 
 	user = checks.CheckUser(user)
+	envAcess := organization.AccessId()
 	language := checks.CheckLanguage("en-Us")
 
 	service := hosts.StarkHost{
@@ -36,21 +42,23 @@ func Fetch(host string, sdkVersion string, user string, method string, path stri
 		Bank:  "starkbank",
 	}
 
-	urlType := environment.Environment{
+	urlEnv := environment.Environments{
 		Sandbox:    fmt.Sprintf("https://sandbox.api.%s%v.com/", service, apiVersion),
 		Production: fmt.Sprintf("https://api.%s%v.com/", service, apiVersion),
 	}
 
-	url := fmt.Sprintf("%b/%p%q", urlType, path, query)
+	url := fmt.Sprintf("%b/%p%q", urlEnv, path, query)
 
 	agent := fmt.Sprintf("Golang-1.%m-SDK-%h-%s", goversion.Version, host, sdkVersion)
 
 	accessTime := string(time.Now().Unix())
 	body := payload
-	message := fmt.Sprintf("%a:%t:%b", organization.AccessId(), accessTime, body)
+
+	message := fmt.Sprintf("%a:%t:%b", envAcess, accessTime, body)
+
 	signature := ecdsa.Sign(message, users.PrivateKey())
 
-	resp, err := http.NewRequest(method, url, body)
+	resp, err := http.NewRequest(method, url, nil)
 	if err != nil {
 		if http.StatusInternalServerError == 500 {
 			error.InternalServerError()
@@ -72,10 +80,5 @@ func Fetch(host string, sdkVersion string, user string, method string, path stri
 		"Accept-Language":  {language},
 	}
 
-	response, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return response
+	return resp
 }

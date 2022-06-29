@@ -1,12 +1,7 @@
 package url
 
-func UrlEncode(params) string {
-	return ""
+func UrlEncode() {
 }
 
-func ValueToString(value) string {
-	if(){
-
-	}
-	return ""
+func ValueToString() {
 }

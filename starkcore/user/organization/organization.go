@@ -5,6 +5,11 @@ import (
 	"fmt"
 )
 
+type Organizationer interface {
+	AcessId() string
+	Replace() Organization
+}
+
 type Organization struct {
 	WorkspaceId string
 	Id          users.User
@@ -38,18 +43,18 @@ type Organization struct {
 //  Attributes (return-only):
 //  - pem [string]: private key in pem format. ex: "-----BEGIN PUBLIC KEY-----\nMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEyTIHK6jYuik6ktM9FIF3yCEYzpLjO5X/\ntqDioGM+R2RyW0QEo+1DG8BrUf4UXHSvCjtQ0yLppygz23z0yPZYfw==\n-----END PUBLIC KEY-----"
 
-func AccessId() string {
-	if (obj.WorkspaceId ) {
-		return fmt.Sprintf("organization/%i/workspace/%w", obj.Id, obj.WorkspaceId)
+func AccessId(workspaceId string, id string) string {
+	if &workspaceId == nil {
+		return fmt.Sprintf("organization/%i/workspace/%w", id, workspaceId)
 	}
-	return fmt.Sprintf("organization/ %i", obj.Id)
+	return fmt.Sprintf("organization/%i", id)
 }
 
-func Replace(workspaceId) Organization {
-	return new (Organization{
-		workspaceId,
-		obj.Id,
-		obj.PrivateKey,
-		obj.Environment,
+func Replace(workspaceId string, organization Organization) Organization {
+	return Organization{
+		WorkspaceId: workspaceId,
+		Id:          organization.Id,
+		PrivateKey:  organization.PrivateKey,
+		Environment: organization.Environment,
 	}
 }

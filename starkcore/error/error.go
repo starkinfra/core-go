@@ -4,18 +4,17 @@ import (
 	"fmt"
 )
 
-type error interface {
-	Error() string
+type StarkError interface {
 }
 
-type Error struct {
+type Errors struct {
 	Code    string
 	Message string
 	Content string
 }
 
-func Error() string {
-	return fmt.Sprintf("%c : %m", e.Code, e.Message)
+func Error(errors Errors) string {
+	return fmt.Sprintf("%c : %m", errors.Code, errors.Message)
 }
 
 func InputErrors() string {

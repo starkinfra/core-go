@@ -4,35 +4,41 @@ import (
 	"core-go/starkcore/utils/api"
 	"core-go/starkcore/utils/request"
 	"fmt"
+	"io"
 )
 
-func GetPage(sdkVersion, host, apiVersion, user, resources, language, timeout, payload, query) {
+type Response struct {
+
+}
+
+func GetPage(sdkVersion string, host string, apiVersion string, user string, resources string, language string, timeout string, query string) {
 	json := request.Fetch(
 		host,
 		sdkVersion,
 		user,
 		"GET",
 		api.Endpoint(resources),
-		payload,
+		nil,
 		apiVersion,
 		query,
 	)
-	json = request.GetJson(json, Response)
+	json = request.GetJson(json.Body)
 	entities := api.FromApiJson(resources, entity)  api.LastNamePlural(resources)
-	cursor := json.get("cursor")
+	cursor := json["cursor"]
 
 	return cursor, entities
 
 }
 
-func GetStream(sdkVersion, host, apiVersion, user, resources, id, language, timeout, payload, query) {
+func GetStream(sdkVersion string, host string, apiVersion string, user string, resources string, language string, timeout string, query string) {
+
 	json := request.Fetch(
 		host,
 		sdkVersion,
 		user,
 		"GET",
 		api.Endpoint(resources),
-		PAYLOAD DE MULTI,
+		nil,
 		apiVersion,
 		query,
 	)
@@ -41,14 +47,14 @@ func GetStream(sdkVersion, host, apiVersion, user, resources, id, language, time
 	return api.FromApiJson(resources, entityJson)
 }
 
-func GetId(sdkVersion, host, apiVersion, user, resources, id, language, timeout, payload, query) {
+func GetId(sdkVersion string, host string, apiVersion string, user string, resources string, id string, language string, timeout string, query string) {
 	json := request.Fetch(
 		host,
 		sdkVersion,
 		user,
 		"GET",
-		api.Endpoint(resources),
-		PAYLOAD DE MULTI,
+		fmt.Sprintf("%v/%v", api.Endpoint(resource), id),
+		nil,
 		apiVersion,
 		query,
 )
@@ -57,14 +63,14 @@ func GetId(sdkVersion, host, apiVersion, user, resources, id, language, timeout,
 	return api.FromApiJson(resources, entityJson)
 }
 
-func GetContent(sdkVersion, host, apiVersion, user, resources, id, language, timeout, payload, query) {
+func GetContent(sdkVersion string, host string, apiVersion string, user string, resources string, language string, timeout string, query string) {
 	json := request.Fetch(
 		host,
 		sdkVersion,
 		user,
 		"GET",
 		api.Endpoint(resources),
-		PAYLOAD DE MULTI,
+		nil,
 		apiVersion,
 		query,
 )
@@ -73,14 +79,14 @@ func GetContent(sdkVersion, host, apiVersion, user, resources, id, language, tim
 	return api.FromApiJson(resources, entityJson)
 }
 
-func GetSubResource(sdkVersion, host, apiVersion, user, resources, id, language, timeout, payload, query) {
+func GetSubResource(sdkVersion string, host string, apiVersion string, user string, resources string, language string, timeout string, query string) {
 	json := request.Fetch(
 		host,
 		sdkVersion,
 		user,
 		"GET",
 		api.Endpoint(resources),
-		PAYLOAD DE MULTI,
+		nil,
 		apiVersion,
 		query,
 )
@@ -89,14 +95,14 @@ func GetSubResource(sdkVersion, host, apiVersion, user, resources, id, language,
 	return api.FromApiJson(resources, entityJson)
 }
 
-func GetSubResources(sdkVersion, host, apiVersion, user, resources, id, language, timeout, payload, query) {
+func GetSubResources(sdkVersion string, host string, apiVersion string, user string, resources string, language string, timeout string, query string) {
 	json := request.Fetch(
 		host,
 		sdkVersion,
 		user,
 		"GET",
 		api.Endpoint(resources),
-		PAYLOAD DE MULTI,
+		nil,
 		apiVersion,
 		query,
 	)
@@ -105,23 +111,7 @@ func GetSubResources(sdkVersion, host, apiVersion, user, resources, id, language
 	return api.FromApiJson(resources, entityJson)
 }
 
-func PostMulti(sdkVersion, host, apiVersion, user, resources, id, language, timeout, payload, query) {
-	json := request.Fetch(
-		host,
-		sdkVersion,
-		user,
-		"POST",
-		api.Endpoint(resources),
-		PAYLOAD DE MULTI,
-		apiVersion,
-		query,
-	)
-	json = request.GetJson(json, Response)
-	entityJson := json[api.LastName(resources)]
-	return api.FromApiJson(resources, entityJson)
-}
-
-func PostSingle(sdkVersion, host, apiVersion, user, resources, id, language, timeout, payload, query) {
+func PostMulti(sdkVersion string, host string, apiVersion string, user string, resources string, payload io.Reader, language string, timeout string, query string) {
 	payload := api.ApiJson(entity)
 	json := request.Fetch(
 		host,
@@ -138,14 +128,31 @@ func PostSingle(sdkVersion, host, apiVersion, user, resources, id, language, tim
 	return api.FromApiJson(resources, entityJson)
 }
 
-func DeleteId(sdkVersion, host, apiVersion, user, resources, id, language, timeout, payload, query) {
+func PostSingle(sdkVersion string, host string, apiVersion string, user string, resources string, payload io.Reader, language string, timeout string, query string) {
+	payload := api.ApiJson(entity)
+	json := request.Fetch(
+		host,
+		sdkVersion,
+		user,
+		"POST",
+		api.Endpoint(resources),
+		payload,
+		apiVersion,
+		query,
+	)
+	json = request.GetJson(json, Response)
+	entityJson := json[api.LastName(resources)]
+	return api.FromApiJson(resources, entityJson)
+}
+
+func DeleteId(sdkVersion string, host string, apiVersion string, user string, resources string, id string, language string, timeout string, query string) {
 	json := request.Fetch(
 		host,
 		sdkVersion,
 		user,
 		"DELETE",
 		fmt.Sprintf("%e/%i", api.Endpoint(resources), id),
-		api.CastJsonToApiFormat(payload),
+		api.CastJsonToApiFormat(nil),
 		apiVersion,
 		query,
 	)
@@ -153,7 +160,7 @@ func DeleteId(sdkVersion, host, apiVersion, user, resources, id, language, timeo
 	return api.FromApiJson(resources, entity)
 }
 
-func PatchId(sdkVersion, host, apiVersion, user, resources, id,language, timeout, payload, query) {
+func PatchId(sdkVersion string, host string, apiVersion string, user string, resources string, id string, payload string, language string, timeout string, query string) string {
 	json := request.Fetch(
 		host,
 		sdkVersion,
@@ -164,20 +171,21 @@ func PatchId(sdkVersion, host, apiVersion, user, resources, id,language, timeout
 		apiVersion,
 		query,
 	)
+	json = request.GetJson(*json)
 	entity := json[api.LastName(resources)]
 	return api.FromApiJson(resources, entity)
 }
 
-func GetRaw(sdkVersion, host, apiVersion, user, resources, language, timeout, payload, query) {
+func GetRaw(sdkVersion string, host string, apiVersion string, user string, resources string, language string, timeout string, query string) string {
 	json := request.Fetch(
 		host,
 		sdkVersion,
 		user,
 		"GET",
 		api.Endpoint(resources),
-		payload,
+		nil,
 		apiVersion,
 		query,
 		)
-	return request.GetJson(json)
+	return request.GetJson(*json)
 }

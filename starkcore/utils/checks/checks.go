@@ -1,45 +1,69 @@
 package checks
 
 import (
-	"fmt"
-	"github.com/stretchr/testify/assert"
 	"core-go/starkcore/environment"
+	"core-go/starkcore/user/users"
+	"fmt"
+	"github.com/starkbank/ecdsa-go/ellipticcurve/privatekey"
+	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 )
 
-func CheckEnvironment(env string, t *testing.T) string{
-	assert.Containsf(t,environment.Environment, env, "Select a valid environment" + for)
+func CheckEnvironment(env string, t *testing.T) string {
+	message := fmt.Sprintf("Select a valid environment %m", strings.Join(environment.Environment, ","))
+	assert.Containsf(t, environment.Environment, env, message)
 	return env
 }
 
-func CheckPrivateKey (pem string) string{
+func CheckPrivateKey(pem string) string {
+	if (privatekey.FromPem(pem).Curve.Name == "secp256k1"){
+
+	} else {
+		return fmt.Sprintf("Private-key must be valid secp256k1 ECDSA string in pem format")
+	}
+	return pem
+}
+
+func CheckUser(user users.User) users.User {
+	vari, _ := fmt.Printf("%T", user)
+	variable := string(vari)
+	if (variable != "user.User"){
+		fmt.Printf("A user is required to access our API. Check our README: https://github.com/starkinfra/core-python/")
+	}
+	return user
+}
+
+func CheckLanguage(language string) string {
+	acceptedLanguages := []string{"en-US", "pt-BR"}
+
+	message := fmt.Sprintf("Language must be one from %a", acceptedLanguages)
+	assert.Containsf(t, language, acceptedLanguages, message)
+	return language
+}
+
+func CheckDateTimeOrDate(data string) {
 
 }
 
-func CheckUser (user string) string{
+func CheckDateTime(user string) {
 
 }
 
-func CheckLanguage (language string) string{
+func CheckDate(user string) {
 
 }
 
-func CheckDateTimeOrDate (data string){
+func CheckTimeDelta(data string) {
+	if &data == nil {
+		return ""
+	}
+
+	if data.
 
 }
 
-func CheckDateTime (user string){
-
-}
-
-func CheckDate (user string){
-
-}
-
-func CheckTimeDelta (user string){
-
-}
-
-func CheckDateTimeString (data string){
+func CheckDateTimeString(data string) {
+	data = string(data)
 
 }

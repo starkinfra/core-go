@@ -2,21 +2,36 @@ package api
 
 import (
 	"fmt"
+	"io"
+	"reflect"
 	"strings"
 	"core-go/starkcore/utils/case"
+	"time"
 )
 
-func ApiJson(entity string) {
-	type := fmt.Sprintf("%T", entity)
-	if ()
+func ApiJson(entity io.Reader) map[]{
+	if (reflect.TypeOf(entity).Name() == 'byte'){
+		return CastJsonToApiFormat(entity)
+	}
+
+	json := map[]
+	return CastJsonToApiFormat(json)
 }
 
-func CastJsonToApiFormat(){
+func CastJsonToApiFormat(json io.Reader) map[] {
 	return _case.SnakeToCamel()
 }
 
-func CastValues(value string){
+func CastValues(value io.Reader) map[string]string {
+	accessTime := string(time.Now().Unix())
+	switch value {
+	case time.UnixDate:
+	}
 
+	var castedValues map[string]string
+
+
+	return castedValues
 }
 
 func FromApiJson() string {
