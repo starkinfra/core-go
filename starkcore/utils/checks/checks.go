@@ -2,7 +2,9 @@ package checks
 
 import (
 	"core-go/starkcore/environment"
+	"core-go/starkcore/user/organization"
 	"core-go/starkcore/user/users"
+	"core-go/starkcore/utils/hosts"
 	"fmt"
 	"github.com/starkbank/ecdsa-go/ellipticcurve/privatekey"
 	"github.com/stretchr/testify/assert"
@@ -25,13 +27,23 @@ func CheckPrivateKey(pem string) string {
 	return pem
 }
 
-func CheckUser(user users.User) users.User {
+func CheckUser(user users.Users) users.Users {
 	vari, _ := fmt.Printf("%T", user)
 	variable := string(vari)
 	if (variable != "user.User"){
 		fmt.Printf("A user is required to access our API. Check our README: https://github.com/starkinfra/core-python/")
-	}
+	} 
 	return user
+}
+
+func CheckAccess (users users.Users) string{
+	
+	if (users. ){
+		organization.AccessId()
+	} else if (us) {
+
+	}
+	return ""
 }
 
 func CheckLanguage(language string) string {
@@ -40,6 +52,18 @@ func CheckLanguage(language string) string {
 	message := fmt.Sprintf("Language must be one from %a", acceptedLanguages)
 	assert.Containsf(t, language, acceptedLanguages, message)
 	return language
+}
+
+func CheckHost(host string) string{
+	if (host == hosts.Service.Bank){
+		service := "starkbank"
+		return service
+	}
+	if (host == hosts.Service.Infra) {
+		service := "starkinfra"
+		return service
+	}
+	return ""
 }
 
 func CheckDateTimeOrDate(data string) {

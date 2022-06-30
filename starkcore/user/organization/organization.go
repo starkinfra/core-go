@@ -3,6 +3,7 @@ package organization
 import (
 	"core-go/starkcore/user/users"
 	"fmt"
+	"io"
 )
 
 type Organizationer interface {
@@ -15,7 +16,6 @@ type Organization struct {
 	Id          users.User
 	PrivateKey  users.User
 	Environment users.User
-	Pem         users.User
 }
 
 //  Organization object
@@ -43,7 +43,7 @@ type Organization struct {
 //  Attributes (return-only):
 //  - pem [string]: private key in pem format. ex: "-----BEGIN PUBLIC KEY-----\nMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEyTIHK6jYuik6ktM9FIF3yCEYzpLjO5X/\ntqDioGM+R2RyW0QEo+1DG8BrUf4UXHSvCjtQ0yLppygz23z0yPZYfw==\n-----END PUBLIC KEY-----"
 
-func AccessId(workspaceId string, id string) string {
+func AccessId(workspaceId io.Reader, id string) string {
 	if &workspaceId == nil {
 		return fmt.Sprintf("organization/%i/workspace/%w", id, workspaceId)
 	}

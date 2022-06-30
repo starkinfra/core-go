@@ -3,10 +3,8 @@ package request
 import (
 	"core-go/starkcore/environment"
 	"core-go/starkcore/error"
-	"core-go/starkcore/user/organization"
 	"core-go/starkcore/user/users"
 	"core-go/starkcore/utils/checks"
-	"core-go/starkcore/utils/hosts"
 	"fmt"
 	"github.com/starkbank/ecdsa-go/ellipticcurve/ecdsa"
 	"internal/goversion"
@@ -31,20 +29,21 @@ func GetJson(response http.Request) string {
 	return response.Referer()
 }
 
-func Fetch(host string, sdkVersion string, user users.User, method string, path string, payload io.Reader, apiVersion string, query string) *http.Request {
+func Fetch(host string, sdkVersion string, user users.Users, method string, path string, payload io.Reader, apiVersion string, query io.Reader, language string) *http.Request {
+
+	sdkVersion = "v2"
 
 	user = checks.CheckUser(user)
-	envAcess := organization.AccessId()
-	language := checks.CheckLanguage("en-Us")
+	accessUser := user.Environment
 
-	service := hosts.StarkHost{
-		Infra: "starkinfra",
-		Bank:  "starkbank",
-	}
+	language = "en-US"
+	language = checks.CheckLanguage(language)
+
+	service := checks.CheckHost(host)
 
 	urlEnv := environment.Environments{
-		Sandbox:    fmt.Sprintf("https://sandbox.api.%s%v.com/", service, apiVersion),
 		Production: fmt.Sprintf("https://api.%s%v.com/", service, apiVersion),
+		Sandbox:    fmt.Sprintf("https://sandbox.api.%s%v.com/", service, apiVersion),
 	}
 
 	url := fmt.Sprintf("%b/%p%q", urlEnv, path, query)
@@ -52,11 +51,10 @@ func Fetch(host string, sdkVersion string, user users.User, method string, path 
 	agent := fmt.Sprintf("Golang-1.%m-SDK-%h-%s", goversion.Version, host, sdkVersion)
 
 	accessTime := string(time.Now().Unix())
+
 	body := payload
-
-	message := fmt.Sprintf("%a:%t:%b", envAcess, accessTime, body)
-
-	signature := ecdsa.Sign(message, users.PrivateKey())
+	// message := fmt.Sprintf("%a:%t:%b", accssUser, accessTime, body)
+	signature := ecdsa.Sign(message, users.PrivateKey(user))
 
 	resp, err := http.NewRequest(method, url, nil)
 	if err != nil {
