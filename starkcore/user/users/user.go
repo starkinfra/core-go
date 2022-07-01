@@ -1,11 +1,9 @@
 package users
 
-import (
-	"github.com/starkbank/ecdsa-go/ellipticcurve/privatekey"
-)
+import "github.com/starkbank/ecdsa-go/ellipticcurve/privatekey"
 
 type User interface {
-	PrivateKey() privatekey.PrivateKey
+	AccessId() string
 }
 
 type Users struct {
@@ -13,6 +11,12 @@ type Users struct {
 	Pem         string
 	Environment string
 }
+
+//func AcessId(user user.Users) string {
+//	return project.AccessIdP(users.User)
+//
+//	return project.AccessIdO()
+//}
 
 func PrivateKey(user Users) privatekey.PrivateKey {
 	return privatekey.FromPem(user.Pem)

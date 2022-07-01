@@ -3,15 +3,17 @@ package request
 import (
 	"core-go/starkcore/environment"
 	"core-go/starkcore/error"
+	"core-go/starkcore/user/project"
 	"core-go/starkcore/user/users"
 	"core-go/starkcore/utils/checks"
-	"fmt"
 	"github.com/starkbank/ecdsa-go/ellipticcurve/ecdsa"
+	// "github.com/starkbank/ecdsa-go/ellipticcurve/privatekey"
 	"internal/goversion"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"time"
+	"fmt"
 )
 
 type Response struct {
@@ -19,7 +21,7 @@ type Response struct {
 	Content string
 }
 
-func GetJson(response http.Request) string {
+func GetJson(response *http.Request) string {
 	resBody, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		fmt.Printf("client: could not read response body: %s\n", err)
@@ -29,12 +31,11 @@ func GetJson(response http.Request) string {
 	return response.Referer()
 }
 
-func Fetch(host string, sdkVersion string, user users.Users, method string, path string, payload io.Reader, apiVersion string, query io.Reader, language string) *http.Request {
+func Fetch(host string, sdkVersion string, user project.Projects, method string, path string, payload io.Reader, apiVersion string, query io.Reader, language string) *http.Request {
 
 	sdkVersion = "v2"
 
 	user = checks.CheckUser(user)
-	accessUser := user.Environment
 
 	language = "en-US"
 	language = checks.CheckLanguage(language)
@@ -53,8 +54,8 @@ func Fetch(host string, sdkVersion string, user users.Users, method string, path
 	accessTime := string(time.Now().Unix())
 
 	body := payload
-	// message := fmt.Sprintf("%a:%t:%b", accssUser, accessTime, body)
-	signature := ecdsa.Sign(message, users.PrivateKey(user))
+	ERROBIZARRO message := fmt.Sprintf("%a:%t:%b", "", accessTime, body)
+	ERROBIZARRO signature := ecdsa.Sign(message, "")
 
 	resp, err := http.NewRequest(method, url, nil)
 	if err != nil {
@@ -70,9 +71,9 @@ func Fetch(host string, sdkVersion string, user users.Users, method string, path
 	}
 
 	resp.Header = http.Header{
-		"Access-Id":        {},
+		"Access-Id":        {ERROBIZARRO},
 		"Access-Time":      {accessTime},
-		"Access-Signature": {signature},
+		"Access-Signature": {ERROBIZARRO},
 		"Content-Type":     {"application/json"},
 		"User-Agent":       {agent},
 		"Accept-Language":  {language},

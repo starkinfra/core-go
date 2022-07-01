@@ -6,11 +6,10 @@ import (
 	"reflect"
 	"strings"
 	"core-go/starkcore/utils/case"
-	"time"
 )
 
-func ApiJson(entity io.Reader) map[]{
-	if (reflect.TypeOf(entity).Name() == 'byte'){
+func ApiJson(entity map[string]string) map[string]string{
+	if (reflect.TypeOf(entity).Name() == 'map'){
 		return CastJsonToApiFormat(entity)
 	}
 
@@ -18,36 +17,19 @@ func ApiJson(entity io.Reader) map[]{
 	return CastJsonToApiFormat(json)
 }
 
-func CastJsonToApiFormat(json io.Reader) map[] {
+func CastJsonToApiFormat(json io.Reader) map[string]string {
 	return _case.SnakeToCamel()
 }
 
-func CastValues(value io.Reader) map[string]string {
-	accessTime := string(time.Now().Unix())
-	switch value {
-	case time.UnixDate:
-	}
-
-	var castedValues map[string]string
-
-
-	return castedValues
-}
-
-func FromApiJson() string {
-
-}
-
 func Endpoint(resource map[string]string) string{
-	name := resource["name"].ReplaceAllString("-log", "/log")
-	name = resource["name"].ReplaceAllString("-attempt", "/attempt")
+	name := strings.Replace(resource["name"],"-log", "/log", 1000000)
+	name = strings.Replace(resource["name"],"-attempt", "/attempt", 1000000)
 	return _case.CamelToKebab(name)
 }
 
 func LastName(resource map[string]string) string{
-	name := resource["name"]
-	nameS := strings.SplitN(name, "-", -1)
-	return _case.CamelToKebab(nameS)
+	name := strings.SplitN(resource["name"], "-", -1)
+	return _case.CamelToKebab(strings.Join(name," "))
 }
 
 func LastNamePlural(resource map[string]string) string{

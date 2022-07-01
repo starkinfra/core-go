@@ -5,11 +5,7 @@ import (
 	"fmt"
 )
 
-type Projecter interface {
-	AccessId()
-}
-
-type Project struct {
+type Projects struct {
 	Name        string
 	AllowedIps  string
 	Id          users.User
@@ -36,6 +32,6 @@ type Project struct {
 // - allowed_ips [list of strings]: list containing the strings of the ips allowed to make requests on behalf of this project. ex: ["190.190.0.50"]
 // - pem [string]: private key in pem format. ex: "-----BEGIN PUBLIC KEY-----\nMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEyTIHK6jYuik6ktM9FIF3yCEYzpLjO5X/\ntqDioGM+R2RyW0QEo+1DG8BrUf4UXHSvCjtQ0yLppygz23z0yPZYfw==\n-----END PUBLIC KEY-----"
 
-func AccessId(project Project) string {
-	return fmt.Sprintf("project/%i", project.Id)
+func (p Projects) AccessId() string {
+	return fmt.Sprintf("project/%i", p.Id)
 }
