@@ -1,6 +1,7 @@
 package api
 
 import (
+	"core-go/starkcore/utils/resource"
 	"fmt"
 	"io"
 	"reflect"
@@ -21,18 +22,18 @@ func CastJsonToApiFormat(json io.Reader) map[string]string {
 	return _case.SnakeToCamel()
 }
 
-func Endpoint(resource map[string]string) string{
-	name := strings.Replace(resource["name"],"-log", "/log", 1000000)
-	name = strings.Replace(resource["name"],"-attempt", "/attempt", 1000000)
+func Endpoint(resource resource.Resource) string{
+	name := strings.Replace(resource.Name,"-log", "/log", 1000000)
+	name = strings.Replace(resource.Name,"-attempt", "/attempt", 1000000)
 	return _case.CamelToKebab(name)
 }
 
-func LastName(resource map[string]string) string{
-	name := strings.SplitN(resource["name"], "-", -1)
+func LastName(resource resource.Resource) string{
+	name := strings.SplitN(resource.Name, "-", -1)
 	return _case.CamelToKebab(strings.Join(name," "))
 }
 
-func LastNamePlural(resource map[string]string) string{
+func LastNamePlural(resource resource.Resource) string{
 	base := LastName(resource)
 	if (strings.HasSuffix(base, "s") == true){
 		return base

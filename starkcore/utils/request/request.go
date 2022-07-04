@@ -2,18 +2,16 @@ package request
 
 import (
 	"core-go/starkcore/environment"
-	"core-go/starkcore/error"
 	"core-go/starkcore/user/project"
-	"core-go/starkcore/user/users"
 	"core-go/starkcore/utils/checks"
+	"encoding/json"
+	"fmt"
 	"github.com/starkbank/ecdsa-go/ellipticcurve/ecdsa"
-	// "github.com/starkbank/ecdsa-go/ellipticcurve/privatekey"
-	"internal/goversion"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"time"
-	"fmt"
 )
 
 type Response struct {
@@ -21,17 +19,17 @@ type Response struct {
 	Content string
 }
 
-func GetJson(response *http.Request) string {
+func GetJson(response *http.Response) struct{} {
 	resBody, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		fmt.Printf("client: could not read response body: %s\n", err)
 	}
-	fmt.Printf(string(resBody))
-
-	return response.Referer()
+	var data struct{}
+	json.Unmarshal(resBody, &data)
+	return data
 }
 
-func Fetch(host string, sdkVersion string, user project.Projects, method string, path string, payload io.Reader, apiVersion string, query io.Reader, language string) *http.Request {
+func Fetch(host string, sdkVersion string, user project.Projects, method string, path string, payload io.Reader, apiVersion string, query any, language string) *http.Response {
 
 	sdkVersion = "v2"
 
@@ -49,7 +47,8 @@ func Fetch(host string, sdkVersion string, user project.Projects, method string,
 
 	url := fmt.Sprintf("%b/%p%q", urlEnv, path, query)
 
-	agent := fmt.Sprintf("Golang-1.%m-SDK-%h-%s", goversion.Version, host, sdkVersion)
+	//agent := fmt.Sprintf("Golang-1.%m-SDK-%h-%s", goversion.Version, host, sdkVersion)
+	agent := fmt.Sprintf("Golang-1.0-SDK-%h-%s", host, sdkVersion)
 
 	accessTime := string(time.Now().Unix())
 
@@ -57,20 +56,13 @@ func Fetch(host string, sdkVersion string, user project.Projects, method string,
 	ERROBIZARRO message := fmt.Sprintf("%a:%t:%b", "", accessTime, body)
 	ERROBIZARRO signature := ecdsa.Sign(message, "")
 
-	resp, err := http.NewRequest(method, url, nil)
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		if http.StatusInternalServerError == 500 {
-			error.InternalServerError()
-		}
-		if http.StatusBadRequest == 400 {
-			error.InputErrors()
-		}
-		if http.StatusOK == 200 {
-			error.UnkownError()
-		}
+		fmt.Printf("client: could not create request: %s\n", err)
+		os.Exit(1)
 	}
 
-	resp.Header = http.Header{
+	req.Header = http.Header{
 		"Access-Id":        {ERROBIZARRO},
 		"Access-Time":      {accessTime},
 		"Access-Signature": {ERROBIZARRO},
@@ -79,5 +71,14 @@ func Fetch(host string, sdkVersion string, user project.Projects, method string,
 		"Accept-Language":  {language},
 	}
 
-	return resp
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		fmt.Printf("client: error making http request: %s\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("client: got response!\n")
+	fmt.Printf("client: status code: %d\n", res.StatusCode)
+
+	return res
 }
