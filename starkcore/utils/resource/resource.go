@@ -1,6 +1,6 @@
 package resource
 
 type Resource struct {
-	Class struct{}
+	Class any
 	Name  string
 }

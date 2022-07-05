@@ -2,13 +2,10 @@ package request
 
 import (
 	"core-go/starkcore/environment"
-	"core-go/starkcore/user/project"
+	u "core-go/starkcore/user/user"
 	"core-go/starkcore/utils/checks"
-	"encoding/json"
 	"fmt"
 	"github.com/starkbank/ecdsa-go/ellipticcurve/ecdsa"
-	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
@@ -19,53 +16,43 @@ type Response struct {
 	Content string
 }
 
-func GetJson(response *http.Response) struct{} {
-	resBody, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		fmt.Printf("client: could not read response body: %s\n", err)
-	}
-	var data struct{}
-	json.Unmarshal(resBody, &data)
-	return data
-}
-
-func Fetch(host string, sdkVersion string, user project.Projects, method string, path string, payload io.Reader, apiVersion string, query any, language string) *http.Response {
+func Fetch(host string, sdkVersion string, user u.Users, method string, path string, payload any, apiVersion string, language string) *http.Response {
 
 	sdkVersion = "v2"
-
-	user = checks.CheckUser(user)
 
 	language = "en-US"
 	language = checks.CheckLanguage(language)
 
-	service := checks.CheckHost(host)
+	var service = checks.CheckHost(host)
 
-	urlEnv := environment.Environments{
+	var urlEnv = environment.Environments{
 		Production: fmt.Sprintf("https://api.%s%v.com/", service, apiVersion),
 		Sandbox:    fmt.Sprintf("https://sandbox.api.%s%v.com/", service, apiVersion),
 	}
 
-	url := fmt.Sprintf("%b/%p%q", urlEnv, path, query)
+	var url = fmt.Sprintf("%b/%p%q", urlEnv, path)
 
 	//agent := fmt.Sprintf("Golang-1.%m-SDK-%h-%s", goversion.Version, host, sdkVersion)
-	agent := fmt.Sprintf("Golang-1.0-SDK-%h-%s", host, sdkVersion)
+	var agent = fmt.Sprintf("Golang-1.0-SDK-%h-%s", host, sdkVersion)
 
-	accessTime := string(time.Now().Unix())
+	var accessTime = string(time.Now().Unix())
 
-	body := payload
-	ERROBIZARRO message := fmt.Sprintf("%a:%t:%b", "", accessTime, body)
-	ERROBIZARRO signature := ecdsa.Sign(message, "")
+	var access u.User
 
-	req, err := http.NewRequest("GET", url, nil)
+	var body = payload
+	var message = fmt.Sprintf("%a:%t:%b", access.AccessId(), accessTime, body)
+	var signature = ecdsa.Sign(message, u.PrivateKey(user)).ToBase64()
+
+	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
 		fmt.Printf("client: could not create request: %s\n", err)
 		os.Exit(1)
 	}
 
 	req.Header = http.Header{
-		"Access-Id":        {ERROBIZARRO},
+		"Access-Id":        {access.AccessId()},
 		"Access-Time":      {accessTime},
-		"Access-Signature": {ERROBIZARRO},
+		"Access-Signature": {signature},
 		"Content-Type":     {"application/json"},
 		"User-Agent":       {agent},
 		"Accept-Language":  {language},

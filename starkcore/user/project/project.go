@@ -1,26 +1,26 @@
 package project
 
 import (
-	"core-go/starkcore/user/users"
+	"core-go/starkcore/user/user"
 	"fmt"
 )
 
 type Projects struct {
 	Name        string
-	AllowedIps  string
-	Id          users.User
-	PrivateKey  users.User
-	Environment users.User
+	AllowedIps  []string
+	Id          user.Users
+	PrivateKey  user.Users
+	Environment user.Users
 }
 
 // Project object
 // The Project object is an authentication entity for the SDK that is permanently
 // linked to a specific Workspace.
-// All requests to the Stark Bank API must be authenticated via an SDK users,
+// All requests to the Stark Bank API must be authenticated via an SDK user,
 // which must have been previously created at the Stark Bank or Stark Infra websites
 // [https://web.sandbox.starkbank.com] or [https://web.starkbank.com]
-// before you can use it in this SDK. Projects may be passed as the users parameter on
-// each request or may be defined as the default users at the start (See README).
+// before you can use it in this SDK. Projects may be passed as the user parameter on
+// each request or may be defined as the default user at the start (See README).
 //
 // Parameters (required):
 // - id [string]: unique id required to identify project. ex: "5656565656565656"

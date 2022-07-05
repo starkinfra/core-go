@@ -25,8 +25,8 @@ func InternalServerError() string {
 	return fmt.Sprintf("Houston, we have a problem")
 }
 
-func UnkownError() string {
-	return fmt.Sprintf("Unkown exception encountered: %m", Message)
+func UnkownError(message string) string {
+	return fmt.Sprintf("Unkown exception encountered: %m", message)
 }
 
 func InvalidSignatureError() string {

@@ -1,15 +1,15 @@
 package organization
 
 import (
-	"core-go/starkcore/user/users"
+	"core-go/starkcore/user/user"
 	"fmt"
 )
 
 type Organization struct {
 	WorkspaceId string
-	Id          users.User
-	PrivateKey  users.User
-	Environment users.User
+	Id          user.Users
+	PrivateKey  user.Users
+	Environment user.Users
 }
 
 //  Organization object
@@ -17,11 +17,11 @@ type Organization struct {
 //  represents your entire Organization, being able to access any Workspace
 //  underneath it and even create new Workspaces. Only a legal representative
 //  of your organization can register or change the Organization credentials.
-//  All requests to the Stark Bank and Stark Infra API must be authenticated via an SDK users,
+//  All requests to the Stark Bank and Stark Infra API must be authenticated via an SDK user,
 //  which must have been previously created at the Stark Bank or Stark Infra websites
 //  [https://web.sandbox.starkbank.com] or [https://web.starkbank.com]
-//  before you can use it in this SDK. Organizations may be passed as the users parameter on
-//  each request or may be defined as the default users at the start (See README).
+//  before you can use it in this SDK. Organizations may be passed as the user parameter on
+//  each request or may be defined as the default user at the start (See README).
 //  If you are accessing a specific Workspace using Organization credentials, you should
 //  specify the workspace ID when building the Organization object or by request, using
 //  the Organization.replace(organization, workspace_id) function, which creates a copy of the organization

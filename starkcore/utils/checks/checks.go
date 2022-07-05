@@ -2,7 +2,7 @@ package checks
 
 import (
 	"core-go/starkcore/environment"
-	"core-go/starkcore/user/users"
+	"core-go/starkcore/user/user"
 	"core-go/starkcore/utils/hosts"
 	"fmt"
 	"github.com/starkbank/ecdsa-go/ellipticcurve/privatekey"
@@ -26,7 +26,7 @@ func CheckPrivateKey(pem string) string {
 	return pem
 }
 
-func CheckUser(user users.Users) users.Users {
+func CheckUser(user user.Users) user.Users {
 	vari, _ := fmt.Printf("%T", user)
 	variable := string(vari)
 	if variable != "user.User" {
