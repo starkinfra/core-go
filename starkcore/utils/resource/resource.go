@@ -1,6 +1,8 @@
 package resource
 
+import "core-go/starkcore/utils/subresource"
+
 type Resource struct {
-	Class any
-	Name  string
+	Id          string
+	Subresource subresource.Subresource
 }

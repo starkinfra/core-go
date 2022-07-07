@@ -3,9 +3,11 @@ package request
 import (
 	"core-go/starkcore/environment"
 	u "core-go/starkcore/user/user"
+	"core-go/starkcore/utils/api"
 	"core-go/starkcore/utils/checks"
 	"fmt"
 	"github.com/starkbank/ecdsa-go/ellipticcurve/ecdsa"
+	"io"
 	"net/http"
 	"os"
 	"time"
@@ -16,7 +18,7 @@ type Response struct {
 	Content string
 }
 
-func Fetch(host string, sdkVersion string, user u.Users, method string, path string, payload any, apiVersion string, language string) *http.Response {
+func Fetch(host string, sdkVersion string, user u.Users, method string, path string, payload io.Reader, apiVersion string, language string) *http.Response {
 
 	sdkVersion = "v2"
 
@@ -39,11 +41,16 @@ func Fetch(host string, sdkVersion string, user u.Users, method string, path str
 
 	var access u.User
 
-	var body = payload
-	var message = fmt.Sprintf("%a:%t:%b", access.AccessId(), accessTime, body)
+	if payload == nil {
+		api.ToApi(payload)
+	} else {
+		payload = nil
+	}
+
+	var message = fmt.Sprintf("%a:%t:%b", access.AccessId(), accessTime, payload)
 	var signature = ecdsa.Sign(message, u.PrivateKey(user)).ToBase64()
 
-	req, err := http.NewRequest(method, url, nil)
+	req, err := http.NewRequest(method, url, payload)
 	if err != nil {
 		fmt.Printf("client: could not create request: %s\n", err)
 		os.Exit(1)
