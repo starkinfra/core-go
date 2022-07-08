@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-var pattern = regexp.MustCompile("(?<!^)(?=[A-Z0-9])")
+var pattern = regexp.MustCompile("!^?=[A-Z0-9]")
 
 func CamelToSnake(str string) string {
 	snake := pattern.ReplaceAllString(str, "${1}_${2}")

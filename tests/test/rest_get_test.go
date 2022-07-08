@@ -2,28 +2,21 @@ package test
 
 import (
 	"core-go/starkcore/utils/hosts"
+	"core-go/starkcore/utils/resource"
 	"core-go/starkcore/utils/rest"
-	Subresource "core-go/starkcore/utils/subresource"
 	"core-go/tests/utils/user"
 	"fmt"
 	"testing"
 )
 
 type Boleto struct {
-	Amount      int      `json:"amount"`
-	Description string   `json:"description"`
-	ExternalId  string   `json:"externalId"`
-	ReceiverId  string   `json:"receiverId"`
-	Tags        []string `json:"tags"`
-	SenderId    string   `json:"senderId"`
-	Source      string   `json:"source"`
-	Id          string   `json:"id"`
-	Fee         int      `json:"fee"`
-	Balance     int      `json:"balance"`
-	Created     int      `json:"created"`
+	Amount   int `json:"amount"`
+	Resource resource.Resource
 }
 
-var resource_g = Subresource.Subresource{Boleto{}, "Boleto"}
+var boleto Boleto
+
+var resource_g = map[string]string{"name": "Boleto"}
 
 func TestSuccessGetPage(t *testing.T) {
 	transactions, _ := rest.GetPage(
@@ -31,7 +24,7 @@ func TestSuccessGetPage(t *testing.T) {
 		hosts.Service.Bank,
 		"v2",
 		user.ExampleProject,
-		Subresource.Subresource{Boleto{}, "Boleto"},
+		resource_g,
 		"pt-BR",
 	)
 
