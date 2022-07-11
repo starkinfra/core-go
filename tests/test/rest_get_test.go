@@ -2,21 +2,13 @@ package test
 
 import (
 	"core-go/starkcore/utils/hosts"
-	"core-go/starkcore/utils/resource"
 	"core-go/starkcore/utils/rest"
 	"core-go/tests/utils/user"
 	"fmt"
 	"testing"
 )
 
-type Boleto struct {
-	Amount   int `json:"amount"`
-	Resource resource.Resource
-}
-
-var boleto Boleto
-
-var resource_g = map[string]string{"name": "Boleto"}
+var resource_g = map[string]string{"name": "boleto"}
 
 func TestSuccessGetPage(t *testing.T) {
 	transactions, _ := rest.GetPage(

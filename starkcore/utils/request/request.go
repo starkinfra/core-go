@@ -3,23 +3,20 @@ package request
 import (
 	"core-go/starkcore/environment"
 	u "core-go/starkcore/user/user"
-	"core-go/starkcore/utils/api"
 	"core-go/starkcore/utils/checks"
 	"fmt"
 	"github.com/starkbank/ecdsa-go/ellipticcurve/ecdsa"
-	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 )
 
-type Response struct {
-	Status  string
-	Content string
-}
-
-func Fetch(host string, sdkVersion string, user u.Users, method string, path string, payload io.Reader, apiVersion string, language string) *http.Response {
+func Fetch(host string, sdkVersion string, user u.Users, method string, path string, payload string, apiVersion string, language string) *http.Response {
+	fmt.Println("------------ENTRANDO NO FETCH-------------")
 
 	sdkVersion = "v2"
 	language = "en-US"
@@ -40,51 +37,55 @@ func Fetch(host string, sdkVersion string, user u.Users, method string, path str
 		url = fmt.Sprintf("%v/%v", baseUrl.Sandbox, path)
 	}
 
-	// https://development.api.starkinfra.com/v2/static-brcode
-	//var url = fmt.Sprintf("%v/%v", baseUrl, path)
+	//https://development.api.starkinfra.com/v2/static-brcode
 
 	//agent := fmt.Sprintf("Golang-1.%m-SDK-%h-%s", goversion.Version, host, sdkVersion)
 	var agent = fmt.Sprintf("Golang-1.0-SDK-%v-%v", host, sdkVersion)
 
-	var accessTime string = string(time.Now().Unix())
-
-	if payload != nil {
-		api.ToApi(payload)
-	} else {
-		payload = nil
+	if payload == "" {
+		fmt.Println("BODY VAZIO")
 	}
 
-	var message = fmt.Sprintf("%a:%t:%b", "project/XXXXXXXXX", accessTime, payload)
+	var accessTime = strconv.FormatInt(time.Now().Unix(), 10)
+
+	var message = fmt.Sprintf("%v:%v:%v", "project/XXXXXXXXX", accessTime, payload)
 
 	var signature = ecdsa.Sign(message, u.PrivateKey(user)).ToBase64()
 
-	fmt.Println(url)
+	fmt.Printf("\nMESSAGE: %v\n", message)
 
-	req, err := http.NewRequest(method, url, payload)
+	client := http.Client{Timeout: time.Duration(15) * time.Second}
+
+	req, err := http.NewRequest(method, url, strings.NewReader(payload))
 	if err != nil {
-		fmt.Printf("client: could not create request: %s\n", err)
-		log.Fatalln(err)
-		os.Exit(1)
+		log.Fatal(err)
+		fmt.Println("deu erro aqui")
 	}
 
-	req.Header = http.Header{
-		"Access-Id":        {"project/XXXXXXXXXXX"},
-		"Access-Time":      {accessTime},
-		"Access-Signature": {signature},
-		"Content-Type":     {"application/json"},
-		"User-Agent":       {agent},
-		"Accept-Language":  {language},
-	}
+	req.Header.Add("Access-Id", "project/XXXXXXXXXX")
+	req.Header.Add("Access-Time", accessTime)
+	req.Header.Add("Access-Signature", signature)
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("User-Agent", agent)
+	req.Header.Add("Accept-Language", language)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := client.Do(req)
 	if err != nil {
+		log.Fatal(err)
 		fmt.Printf("client: error making http request: %s\n", err)
 		os.Exit(1)
 	}
-	defer res.Body.Close()
-	fmt.Printf("client: got response!\n")
-	fmt.Printf("client: status code: %d\n", res.StatusCode)
-	fmt.Println(req.Header)
+
+	resBody, err := ioutil.ReadAll(res.Body)
+
+	if err != nil {
+		fmt.Printf("client: could not read response body: %s\n", err)
+	}
+
+	fmt.Println(string(resBody))
+
+	//var data struct{}
+	//json.Unmarshal(resBody, &data)
 
 	return res
 }

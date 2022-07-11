@@ -8,8 +8,8 @@ import (
 	"log"
 	"os"
 )
-func Create(path string){
 
+func Create(path string) {
 	private := privatekey.New(curve.Secp256k1)
 	public := private.PublicKey()
 
@@ -38,5 +38,4 @@ func Create(path string){
 			log.Println(e)
 		}
 	}
-
 }

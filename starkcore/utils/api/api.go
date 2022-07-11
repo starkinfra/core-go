@@ -5,7 +5,6 @@ import (
 	"core-go/starkcore/utils/case"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -23,12 +22,18 @@ func FromApi(response *http.Response) struct{} {
 	return data
 }
 
-func ToApi(payload io.Reader) *bytes.Reader {
+func ToApi(payload interface{}) *bytes.Reader {
+	fmt.Println("------------ENTRANDO NO ToApi-------------")
 	body, _ := json.Marshal(payload)
 	qualquermerda := bytes.NewReader(body)
-	fmt.Println(string(body))
+	fmt.Sprintf("\nBODY PARSEADO: \n", string(body))
 	return qualquermerda
 }
+
+//func ToApiString(payload io.Reader) string {
+//	body, _ := json.Marshal(payload)
+//	return string(body)
+//}
 
 func Endpoint(resource map[string]string) string {
 	name := strings.Replace(resource["name"], "-log", "/log", 1000000)

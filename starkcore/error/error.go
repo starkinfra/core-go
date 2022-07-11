@@ -1,34 +1,25 @@
 package error
 
-import (
-	"fmt"
-)
-
-type StarkError interface {
-}
-
-type Errors struct {
+type Error struct {
 	Code    string
 	Message string
-	Content string
 }
 
-func Error(errors Errors) string {
-	return fmt.Sprintf("%c : %m", errors.Code, errors.Message)
+type InputError struct {
+	errors Error
 }
 
-func InputErrors() string {
-	return fmt.Sprintf()
+type InternalServerError struct {
+	Code    string
+	Message string
 }
 
-func InternalServerError() string {
-	return fmt.Sprintf("Houston, we have a problem")
+type UnkownError struct {
+	Code    string
+	Message string
 }
 
-func UnkownError(message string) string {
-	return fmt.Sprintf("Unkown exception encountered: %m", message)
-}
-
-func InvalidSignatureError() string {
-	return fmt.Sprintf("")
+type InvalidSignatureError struct {
+	Code    string
+	Message string
 }

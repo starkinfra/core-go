@@ -7,13 +7,13 @@ import (
 
 var pattern = regexp.MustCompile("!^?=[A-Z0-9]")
 
-func CamelToSnake(str string) string {
+func CamelToPascal(str string) string {
 	snake := pattern.ReplaceAllString(str, "${1}_${2}")
 	snake = pattern.ReplaceAllString(snake, "${1}_${2}")
 	return strings.ToLower(snake)
 }
 
-func SnakeToCamel(str string) string {
+func PascalToCamel(str string) string {
 	camel := pattern.ReplaceAllString(str, "${1}${2}")
 	camel = pattern.ReplaceAllString(camel, "${1}${2}")
 	return strings.ToUpper(camel)
