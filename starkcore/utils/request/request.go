@@ -4,6 +4,7 @@ import (
 	"core-go/starkcore/environment"
 	u "core-go/starkcore/user/user"
 	"core-go/starkcore/utils/checks"
+	"encoding/json"
 	"fmt"
 	"github.com/starkbank/ecdsa-go/ellipticcurve/ecdsa"
 	"io/ioutil"
@@ -16,7 +17,6 @@ import (
 )
 
 func Fetch(host string, sdkVersion string, user u.Users, method string, path string, payload string, apiVersion string, language string) *http.Response {
-	fmt.Println("------------ENTRANDO NO FETCH-------------")
 
 	sdkVersion = "v2"
 	language = "en-US"
@@ -40,7 +40,7 @@ func Fetch(host string, sdkVersion string, user u.Users, method string, path str
 	//https://development.api.starkinfra.com/v2/static-brcode
 
 	//agent := fmt.Sprintf("Golang-1.%m-SDK-%h-%s", goversion.Version, host, sdkVersion)
-	var agent = fmt.Sprintf("Golang-1.0-SDK-%v-%v", host, sdkVersion)
+	var agent = fmt.Sprintf("Golang-1.18-SDK-%v-%v", host, sdkVersion)
 
 	if payload == "" {
 		fmt.Println("BODY VAZIO")
@@ -48,7 +48,7 @@ func Fetch(host string, sdkVersion string, user u.Users, method string, path str
 
 	var accessTime = strconv.FormatInt(time.Now().Unix(), 10)
 
-	var message = fmt.Sprintf("%v:%v:%v", "project/XXXXXXXXX", accessTime, payload)
+	var message = fmt.Sprintf("%v:%v:%v", "project/", accessTime, payload)
 
 	var signature = ecdsa.Sign(message, u.PrivateKey(user)).ToBase64()
 
@@ -62,7 +62,7 @@ func Fetch(host string, sdkVersion string, user u.Users, method string, path str
 		fmt.Println("deu erro aqui")
 	}
 
-	req.Header.Add("Access-Id", "project/XXXXXXXXXX")
+	req.Header.Add("Access-Id", "project/")
 	req.Header.Add("Access-Time", accessTime)
 	req.Header.Add("Access-Signature", signature)
 	req.Header.Add("Content-Type", "application/json")
@@ -82,7 +82,17 @@ func Fetch(host string, sdkVersion string, user u.Users, method string, path str
 		fmt.Printf("client: could not read response body: %s\n", err)
 	}
 
-	fmt.Println(string(resBody))
+	var m = map[string]interface{}{}
+	if err := json.Unmarshal(resBody, &m); err != nil {
+		panic(err)
+	}
+	//fmt.Println(sec)
+	//
+	//var m = make(map[string]string)
+	//json.Unmarshal(resBody, &m)
+
+	fmt.Println(m)
+	//fmt.Println(errsdc)
 
 	//var data struct{}
 	//json.Unmarshal(resBody, &data)

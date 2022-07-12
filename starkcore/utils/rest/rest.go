@@ -144,10 +144,6 @@ func PostSingle(sdkVersion string, host string, apiVersion string, user user.Use
 	cursor := response
 
 	return cursor, cursor
-	//var response = api.FromApi(json)
-	//return response, curos
-	//entityJson := response[api.LastName(resource)]
-	//return api.ToApi(entityJson), nil
 }
 
 func DeleteId(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, id string, payload string, language string) struct{} {

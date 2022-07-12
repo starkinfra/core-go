@@ -1,14 +1,33 @@
 package api
 
 import (
-	"bytes"
 	"core-go/starkcore/utils/case"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strings"
 )
+
+//HOW TO PRETTY PRINT
+//b, err := json.MarshalIndent(m, "", "  ")
+//if err != nil {
+//	fmt.Println("error:", err)
+//}
+//fmt.Print(string(b))
+
+//fmt.Println(m)
+//HOW TO RANGE A MAP
+//for key, value := range m {
+//if value == nil || value == "" {
+//	fmt.Printf("%v", value)
+//	delete(m, key)
+//}
+//	fmt.Printf("%v:%v", key, value)
+//}
+
+//fmt.Printf("JSON: %v", string(json))
 
 func FromApi(response *http.Response) struct{} {
 	resBody, err := ioutil.ReadAll(response.Body)
@@ -22,18 +41,40 @@ func FromApi(response *http.Response) struct{} {
 	return data
 }
 
-func ToApi(payload interface{}) *bytes.Reader {
-	fmt.Println("------------ENTRANDO NO ToApi-------------")
-	body, _ := json.Marshal(payload)
-	qualquermerda := bytes.NewReader(body)
-	fmt.Sprintf("\nBODY PARSEADO: \n", string(body))
-	return qualquermerda
+func ApiJson(payload interface{}) string {
+
+	var m = map[string]interface{}{}
+
+	out, _ := json.Marshal(payload)
+	json.Unmarshal(out, &m)
+
+	json, err := json.Marshal(CastJsonToApiFormat(m));
+	if err != nil {
+		panic(err)
+	}
+
+	return string(json)
 }
 
-//func ToApiString(payload io.Reader) string {
-//	body, _ := json.Marshal(payload)
-//	return string(body)
-//}
+func CastJsonToApiFormat(m map[string]interface{}) map[string]interface{} {
+	val := reflect.ValueOf(m)
+	for _, e := range val.MapKeys() {
+		var v = val.MapIndex(e)
+		if v.IsNil() {
+			delete(m, e.String())
+			continue
+		}
+		switch t := v.Interface().(type) {
+		case []interface{}:
+			//CastJsonToApiFormat(v.Interface())
+		default:
+			fmt.Println("default")
+			fmt.Printf("%T\n", t)
+		}
+		fmt.Println(v)
+	}
+	return m
+}
 
 func Endpoint(resource map[string]string) string {
 	name := strings.Replace(resource["name"], "-log", "/log", 1000000)

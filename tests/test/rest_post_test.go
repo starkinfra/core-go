@@ -1,10 +1,10 @@
 package test
 
 import (
+	"core-go/starkcore/utils/api"
 	"core-go/starkcore/utils/hosts"
 	"core-go/starkcore/utils/rest"
 	"core-go/tests/utils/user"
-	"encoding/json"
 	"fmt"
 	"testing"
 )
@@ -68,14 +68,7 @@ func TestSuccessSingle(t *testing.T) {
 		},
 	}
 
-	var boleto = boletos{Boleto: boletop}
-
-	out, err := json.Marshal(boleto)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Printf("\nOBJECTO BOLETO:%v\n", string(out))
+	var boletos_example = boletos{Boleto: boletop}
 
 	var transactions, _ = rest.PostSingle(
 		"0.0.0",
@@ -83,11 +76,10 @@ func TestSuccessSingle(t *testing.T) {
 		"v2",
 		user.ExampleProject,
 		resource_g,
-		string(out),
+		api.ApiJson(boletos_example),
 		"pt-BR",
 	)
 
-	//fmt.Println(boleto)
 	fmt.Printf("\nTRANSACTIONS:::%v\n", transactions)
 }
 
@@ -106,23 +98,3 @@ func TestSuccessSingle(t *testing.T) {
 //	fmt.Sprintf("%v", transactions)
 //}
 
-//var boletop = boleto{
-//	Amount:        61807,
-//	Name:          "Alec Feuerborn",
-//	TaxId:         "38.446.231/0001-04",
-//	StreetLine1:   "Kubasch Street, 900",
-//	StreetLine2:   "",
-//	District:      "Ronny",
-//	City:          "Emmet City",
-//	StateCode:     "SP",
-//	ZipCode:       "01420-020",
-//	Due:           "2022-07-13",
-//	Fine:          2,
-//	Interest:      1,
-//	OverdueLimit:  59,
-//	Descriptions:  nil,
-//	Discounts:     nil,
-//	Tags:          nil,
-//	ReceiverName:  "Stark Bank S.A. - Instituicao de Pagamento",
-//	ReceiverTaxId: "20.018.183/0001-80",
-//}
