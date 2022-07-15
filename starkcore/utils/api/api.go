@@ -4,6 +4,7 @@ import (
 	"core-go/starkcore/utils/case"
 	"encoding/json"
 	"fmt"
+	"github.com/iancoleman/strcase"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -48,32 +49,44 @@ func ApiJson(payload interface{}) string {
 	out, _ := json.Marshal(payload)
 	json.Unmarshal(out, &m)
 
-	json, err := json.Marshal(CastJsonToApiFormat(m));
+	json, err := json.Marshal(CastJsonToApiFormat(m))
 	if err != nil {
+		fmt.Println(err)
 		panic(err)
 	}
+	fmt.Sprintln(string(json))
 
 	return string(json)
 }
 
-func CastJsonToApiFormat(m map[string]interface{}) map[string]interface{} {
+func CastJsonToApiFormat(m interface{}) interface{} {
 	val := reflect.ValueOf(m)
-	for _, e := range val.MapKeys() {
-		var v = val.MapIndex(e)
-		if v.IsNil() {
-			delete(m, e.String())
-			continue
+	//bodyPost := map[interface{}]interface{}{}
+	//bodySlice := []interface{}{}
+	body := map[string]interface{}{}
+
+	if val.Kind() == reflect.Map {
+		for _, e := range val.MapKeys() {
+			v := val.MapIndex(e)
+			myMap := make(map[interface{}]interface{})
+			switch t := v.Interface().(type) {
+			case []interface{}:
+				for key, value := range t {
+					myMap[key] = value
+					CastJsonToApiFormat(myMap)
+				}
+			case map[string]interface{}:
+				for key, value := range t {
+					key = strcase.ToLowerCamel(key)
+					body[key] = value
+					if value == nil {
+						delete(body, key)
+					}
+				}
+			}
 		}
-		switch t := v.Interface().(type) {
-		case []interface{}:
-			//CastJsonToApiFormat(v.Interface())
-		default:
-			fmt.Println("default")
-			fmt.Printf("%T\n", t)
-		}
-		fmt.Println(v)
 	}
-	return m
+	return body
 }
 
 func Endpoint(resource map[string]string) string {

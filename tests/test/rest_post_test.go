@@ -14,31 +14,31 @@ type boletos struct {
 }
 
 type boleto struct {
-	Amount        int               `json:"amount"`
-	Name          string            `json:"name"`
-	TaxId         string            `json:"taxId"`
-	StreetLine1   string            `json:"streetLine1"`
-	StreetLine2   string            `json:"streetLine2"`
-	District      string            `json:"district"`
-	City          string            `json:"city"`
-	StateCode     string            `json:"stateCode"`
-	ZipCode       string            `json:"zipCode"`
-	Due           string            `json:"due"`
-	Fine          float32           `json:"fine"`
-	Interest      float32           `json:"interest"`
-	OverdueLimit  int               `json:"overdueLimit"`
-	Descriptions  map[string]string `json:"descriptions"`
-	Discounts     map[string]string `json:"discounts"`
-	Tags          []string          `json:"tags"`
-	ReceiverName  string            `json:"receiverName"`
-	ReceiverTaxId string            `json:"receiverTaxId"`
-	Id            string            `json:"id"`
-	Fee           int               `json:"fee"`
-	Line          string            `json:"line"`
-	BarCode       string            `json:"barCode"`
-	Transactions  []string          `json:"transactions"`
-	Created       string            `json:"created"`
-	OurNumber     string            `json:"ourNumber"`
+	Amount        int
+	Name          string
+	TaxId         string
+	StreetLine1   string
+	StreetLine2   string
+	District      string
+	City          string
+	StateCode     string
+	ZipCode       string
+	Due           string
+	Fine          float32
+	Interest      float32
+	OverdueLimit  int
+	Descriptions  map[string]string
+	Discounts     map[string]string
+	Tags          []string
+	ReceiverName  string
+	ReceiverTaxId string
+	Id            *string
+	Fee           *int
+	Line          *string
+	BarCode       *string
+	Transactions  *[]string
+	Created       *string
+	OurNumber     *string
 }
 
 var resource_p = map[string]string{"name": "boleto"}
@@ -47,28 +47,56 @@ func TestSuccessSingle(t *testing.T) {
 
 	var boletop = []boleto{
 		{
-			Amount:        61807,
-			Name:          "Alec Feuerborn",
-			TaxId:         "38.446.231/0001-04",
-			StreetLine1:   "Kubasch Street, 900",
-			StreetLine2:   "",
-			District:      "Ronny",
-			City:          "Emmet City",
-			StateCode:     "SP",
-			ZipCode:       "01420-020",
-			Due:           "2022-07-13",
-			Fine:          2,
-			Interest:      1,
-			OverdueLimit:  59,
-			Descriptions:  nil,
-			Discounts:     nil,
-			Tags:          nil,
-			ReceiverName:  "Stark Bank S.A. - Instituicao de Pagamento",
-			ReceiverTaxId: "20.018.183/0001-80",
+			Amount:      123456789,
+			Name:        "TESTE NOVO SEXTA-FEIRA",
+			TaxId:       "38.446.231/0001-04",
+			StreetLine1: "Kubasch Street, 900",
+			StreetLine2: "",
+			District:    "Ronny",
+			City:        "Emmet City",
+			StateCode:   "SP",
+			ZipCode:     "01420-020",
+		},
+		{
+			Amount:      987654321,
+			Name:        "SEGUNDO TESTE DE SEXTA-FEIRA",
+			TaxId:       "38.446.231/0001-04",
+			StreetLine1: "Kubasch Street, 900",
+			StreetLine2: "",
+			District:    "Ronny",
+			City:        "Emmet City",
+			StateCode:   "SP",
+			ZipCode:     "01420-020",
 		},
 	}
 
 	var boletos_example = boletos{Boleto: boletop}
+	//fmt.Println(boletos_example)
+	//
+	//var m = make(map[string]interface{})
+	//
+	//out, _ := json.Marshal(boletos_example)
+	//json.Unmarshal(out, &m)
+	//fmt.Println(string(out))
+	//fmt.Println(m)
+
+	//for key, value := range m {
+	//	if value != "" {
+	//		fmt.Printf("%v", value)
+	//		delete(m, key)
+	//	}
+	//	fmt.Printf("%v:%v", key, value)
+
+	//if err != nil {
+	//	return
+	//}
+
+	//jsons, err := json.Marshal(CastJsonToApiFormat(m))
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//return string(jsons)
 
 	var transactions, _ = rest.PostSingle(
 		"0.0.0",
@@ -80,21 +108,5 @@ func TestSuccessSingle(t *testing.T) {
 		"pt-BR",
 	)
 
-	fmt.Printf("\nTRANSACTIONS:::%v\n", transactions)
+	fmt.Println(transactions)
 }
-
-//
-//func TestSuccessMulti(t *testing.T) {
-//	transactions, _ := rest.PostMulti(
-//		"0.0.0",
-//		hosts.Service.Bank,
-//		"v2",
-//		user.ExampleProject,
-//		resource_g,
-//		&exampleBoleto,
-//		"pt-BR",
-//	)
-//
-//	fmt.Sprintf("%v", transactions)
-//}
-

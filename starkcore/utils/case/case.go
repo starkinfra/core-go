@@ -16,7 +16,7 @@ func CamelToPascal(str string) string {
 func PascalToCamel(str string) string {
 	camel := pattern.ReplaceAllString(str, "${1}${2}")
 	camel = pattern.ReplaceAllString(camel, "${1}${2}")
-	return strings.ToUpper(camel)
+	return strings.ToLower(camel)
 }
 
 func CamelToKebab(str string) string {
