@@ -11,25 +11,6 @@ import (
 	"strings"
 )
 
-//HOW TO PRETTY PRINT
-//b, err := json.MarshalIndent(m, "", "  ")
-//if err != nil {
-//	fmt.Println("error:", err)
-//}
-//fmt.Print(string(b))
-
-//fmt.Println(m)
-//HOW TO RANGE A MAP
-//for key, value := range m {
-//if value == nil || value == "" {
-//	fmt.Printf("%v", value)
-//	delete(m, key)
-//}
-//	fmt.Printf("%v:%v", key, value)
-//}
-
-//fmt.Printf("JSON: %v", string(json))
-
 func FromApi(response *http.Response) struct{} {
 	resBody, err := ioutil.ReadAll(response.Body)
 
@@ -42,28 +23,28 @@ func FromApi(response *http.Response) struct{} {
 	return data
 }
 
-func ApiJson(payload interface{}) string {
+func ApiJson(payload interface{}, resource map[string]string) string {
 
 	var m = map[string]interface{}{}
-
 	out, _ := json.Marshal(payload)
 	json.Unmarshal(out, &m)
+	var bodyDefinitivo = map[string]interface{}{}
+	bodyDefinitivo["boletos"] = CastJsonToApiFormat(m)
 
-	json, err := json.Marshal(CastJsonToApiFormat(m))
+	jsons, err := json.Marshal(bodyDefinitivo)
 	if err != nil {
 		fmt.Println(err)
 		panic(err)
 	}
-	fmt.Sprintln(string(json))
+	fmt.Sprintln(string(jsons))
 
-	return string(json)
+	return string(jsons)
 }
 
 func CastJsonToApiFormat(m interface{}) interface{} {
-	val := reflect.ValueOf(m)
-	//bodyPost := map[interface{}]interface{}{}
-	//bodySlice := []interface{}{}
-	body := map[string]interface{}{}
+	var val = reflect.ValueOf(m)
+	var body = make(map[string]interface{})
+	var bodySlice []map[string]interface{}
 
 	if val.Kind() == reflect.Map {
 		for _, e := range val.MapKeys() {
@@ -73,7 +54,7 @@ func CastJsonToApiFormat(m interface{}) interface{} {
 			case []interface{}:
 				for key, value := range t {
 					myMap[key] = value
-					CastJsonToApiFormat(myMap)
+					return CastJsonToApiFormat(myMap)
 				}
 			case map[string]interface{}:
 				for key, value := range t {
@@ -83,10 +64,12 @@ func CastJsonToApiFormat(m interface{}) interface{} {
 						delete(body, key)
 					}
 				}
+				bodySlice = append(bodySlice, body)
 			}
 		}
+		return bodySlice
 	}
-	return body
+	return nil
 }
 
 func Endpoint(resource map[string]string) string {
@@ -108,5 +91,6 @@ func LastNamePlural(resource map[string]string) string {
 	if strings.HasSuffix(base, "y") == true && strings.HasSuffix(base, "ey") == false {
 		return fmt.Sprintf("%bs", base[:1])
 	}
-	return fmt.Sprintf("%bs", base)
+
+	return base
 }

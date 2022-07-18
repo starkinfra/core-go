@@ -134,15 +134,8 @@ func PostSingle(sdkVersion string, host string, apiVersion string, user user.Use
 	)
 
 	var response = api.FromApi(json)
-	r := reflect.ValueOf(response)
-	typeOfS := r.Type()
-
-	for i := 0; i < r.NumField(); i++ {
-		fmt.Printf("%s\t%v\n", typeOfS.Field(i).Name, r.Field(i).Interface())
-	}
 
 	cursor := response
-
 	return cursor, cursor
 }
 

@@ -40,7 +40,7 @@ func Fetch(host string, sdkVersion string, user u.Users, method string, path str
 	//https://development.api.starkinfra.com/v2/static-brcode
 
 	//agent := fmt.Sprintf("Golang-1.%m-SDK-%h-%s", goversion.Version, host, sdkVersion)
-	var agent = fmt.Sprintf("Golang-1.18-SDK-%v-%v", host, sdkVersion)
+	var agent = fmt.Sprintf("Golang-SDK-%v-%v", host, sdkVersion)
 
 	if payload == "" {
 		fmt.Println("BODY VAZIO")
@@ -52,6 +52,7 @@ func Fetch(host string, sdkVersion string, user u.Users, method string, path str
 
 	var signature = ecdsa.Sign(message, u.PrivateKey(user)).ToBase64()
 
+	fmt.Printf("\nO QUE ESTÁ SENDO ENVIADO PARA A API: %v", payload)
 	fmt.Printf("\nMESSAGE: %v\n", message)
 
 	client := http.Client{Timeout: time.Duration(15) * time.Second}
@@ -91,7 +92,14 @@ func Fetch(host string, sdkVersion string, user u.Users, method string, path str
 	//var m = make(map[string]string)
 	//json.Unmarshal(resBody, &m)
 
-	fmt.Println(m)
+	//HOW TO PRETTY PRINT
+	b, err := json.MarshalIndent(m, "", "  ")
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	fmt.Print(string(b))
+
+	// fmt.Println("ESSE EH O MISTERIOSO", m)
 	//fmt.Println(errsdc)
 
 	//var data struct{}
