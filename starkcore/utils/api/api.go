@@ -29,6 +29,7 @@ func ApiJson(payload interface{}, resource map[string]string) string {
 	out, _ := json.Marshal(payload)
 	json.Unmarshal(out, &m)
 	var bodyDefinitivo = map[string]interface{}{}
+
 	bodyDefinitivo["boletos"] = CastJsonToApiFormat(m)
 
 	jsons, err := json.Marshal(bodyDefinitivo)
@@ -44,7 +45,7 @@ func ApiJson(payload interface{}, resource map[string]string) string {
 func CastJsonToApiFormat(m interface{}) interface{} {
 	var val = reflect.ValueOf(m)
 	var body = make(map[string]interface{})
-	var bodySlice []map[string]interface{}
+	var bodySlice []interface{}
 
 	if val.Kind() == reflect.Map {
 		for _, e := range val.MapKeys() {
@@ -53,8 +54,9 @@ func CastJsonToApiFormat(m interface{}) interface{} {
 			switch t := v.Interface().(type) {
 			case []interface{}:
 				for key, value := range t {
+					fmt.Println("TAMANHO DO ARRAY T-----------------", len(t))
 					myMap[key] = value
-					return CastJsonToApiFormat(myMap)
+					CastJsonToApiFormat(myMap)
 				}
 			case map[string]interface{}:
 				for key, value := range t {
@@ -64,13 +66,31 @@ func CastJsonToApiFormat(m interface{}) interface{} {
 						delete(body, key)
 					}
 				}
+				fmt.Println("BODY FORA DO FOR------------------", body)
 				bodySlice = append(bodySlice, body)
+				fmt.Println("BODY SLICE------------------", bodySlice)
 			}
 		}
-		return bodySlice
 	}
-	return nil
+	return bodySlice
 }
+
+//func CastJsonToApiFormatAgain(m interface{}) interface{} {
+//	var val = reflect.ValueOf(m)
+//	if val.Kind() == reflect.Map {
+//		switch t := v.Interface().(type) {
+//			for key, value := range t {
+//				key = strcase.ToLowerCamel(key)
+//				body[key] = value
+//				if value == nil {
+//					delete(body, key)
+//				}
+//			}
+//			bodySliced := append(bodySlice, body)
+//		}
+//		return bodySliced
+//	}
+//}
 
 func Endpoint(resource map[string]string) string {
 	name := strings.Replace(resource["name"], "-log", "/log", 1000000)
