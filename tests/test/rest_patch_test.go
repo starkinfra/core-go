@@ -2,46 +2,69 @@ package test
 
 //
 //import (
-//	resource2 "core-go/starkcore/utils/resource"
+//	"core-go/starkcore/utils/api"
 //	"core-go/starkcore/utils/rest"
 //	"core-go/tests/utils/user"
 //	"fmt"
 //	"testing"
 //)
 //
-//type Transactiwwsdon struct {
-//	Amount      int      `json:"amount"`
-//	Description string   `json:"amount"`
-//	ExternalId  string   `json:"amount"`
-//	ReceiverId  string   `json:"amount"`
-//	Tags        []string `json:"amount"`
-//	SenderId    string   `json:"amount"`
-//	Source      string   `json:"amount"`
-//	Id          string   `json:"amount"`
-//	Fee         int      `json:"amount"`
-//	Balance     int      `json:"amount"`
-//	Created     int      `json:"amount"`
+//type invoices struct {
+//	Invoice []invoice
 //}
 //
-//var body_pa = struct {
-//}{}
-//
-//var resource_p = resource2.Resource{
-//	Class: Transaction{},
-//	Name:  "Transaction",
+//type invoice struct {
+//	Amount         *int
+//	Name           *string
+//	TaxId          *string
+//	Due            *string
+//	Fine           *float32
+//	Interest       *float32
+//	Expiration     *int
+//	Descriptions   *map[string]string
+//	Discounts      *map[string]string
+//	Tags           *[]string
+//	Pdf            *string
+//	Link           *string
+//	NominalAmount  *int
+//	FineAmount     *int
+//	InterestAmount *int
+//	DiscountAmount *int
+//	Id             *string
+//	Brcode         *string
+//	Status         *string
+//	Fee            *int
+//	TransactionIds *[]string
+//	Created        *string
+//	Updated        *string
 //}
+//
+//var resource_v = map[string]string{"name": "invoice"}
 //
 //func TestSuccessPatch(t *testing.T) {
-//	_ := rest.PatchId(
+//
+//	var id = 4600131349381120
+//	var status = "canceled"
+//
+//	var invoicePatch = []invoice{
+//		{
+//			Amount: &id,
+//			Status: &status,
+//		},
+//	}
+//
+//	var invoice = invoices{Invoice: invoicePatch}
+//
+//	rest.PatchId(
 //		"0.0.0",
 //		"",
 //		"v2",
-//		user.ExampleOrganization,
-//		resource_p,
+//		user.ExampleProject,
+//		resource_v,
 //		"",
-//		body_pa,
+//		api.ApiJson(invoice, resource_v),
 //		"pt-BR",
 //	)
 //
-//	fmt.Sprintf("%v", transactions)
+//	fmt.Sprintf("%v")
 //}

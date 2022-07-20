@@ -24,73 +24,52 @@ func FromApi(response *http.Response) struct{} {
 }
 
 func ApiJson(payload interface{}, resource map[string]string) string {
-
 	var m = map[string]interface{}{}
+
 	out, _ := json.Marshal(payload)
 	json.Unmarshal(out, &m)
-	var bodyDefinitivo = map[string]interface{}{}
 
-	bodyDefinitivo["boletos"] = CastJsonToApiFormat(m)
-
-	jsons, err := json.Marshal(bodyDefinitivo)
+	jsons, err := json.Marshal(CastJsonToApiFormat(m))
 	if err != nil {
 		fmt.Println(err)
 		panic(err)
 	}
-	fmt.Sprintln(string(jsons))
 
 	return string(jsons)
 }
 
 func CastJsonToApiFormat(m interface{}) interface{} {
-	var val = reflect.ValueOf(m)
-	var body = make(map[string]interface{})
-	var bodySlice []interface{}
+	var mJson = reflect.ValueOf(m)
+	if mJson.Kind() != reflect.Map {
+		return m
+	}
 
-	if val.Kind() == reflect.Map {
-		for _, e := range val.MapKeys() {
-			v := val.MapIndex(e)
-			myMap := make(map[interface{}]interface{})
-			switch t := v.Interface().(type) {
-			case []interface{}:
-				for key, value := range t {
-					fmt.Println("TAMANHO DO ARRAY T-----------------", len(t))
-					myMap[key] = value
-					CastJsonToApiFormat(myMap)
-				}
-			case map[string]interface{}:
-				for key, value := range t {
-					key = strcase.ToLowerCamel(key)
-					body[key] = value
-					if value == nil {
-						delete(body, key)
-					}
-				}
-				fmt.Println("BODY FORA DO FOR------------------", body)
-				bodySlice = append(bodySlice, body)
-				fmt.Println("BODY SLICE------------------", bodySlice)
+	apiJson := map[string]interface{}{}
+
+	if typedJson, ok := mJson.Interface().(map[string]interface{}); ok {
+		for key, value := range typedJson {
+			if value == nil {
+				continue
 			}
+			key = strcase.ToLowerCamel(key)
+
+			if v, ok := value.([]interface{}); ok {
+				jsonSlice := []interface{}{}
+				for _, val := range v {
+					jsonSlice = append(jsonSlice, CastJsonToApiFormat(val))
+				}
+				apiJson[key] = jsonSlice
+				continue
+			}
+			if v, ok := value.(map[string]interface{}); ok {
+				apiJson[key] = CastJsonToApiFormat(v)
+				continue
+			}
+			apiJson[key] = value
 		}
 	}
-	return bodySlice
+	return apiJson
 }
-
-//func CastJsonToApiFormatAgain(m interface{}) interface{} {
-//	var val = reflect.ValueOf(m)
-//	if val.Kind() == reflect.Map {
-//		switch t := v.Interface().(type) {
-//			for key, value := range t {
-//				key = strcase.ToLowerCamel(key)
-//				body[key] = value
-//				if value == nil {
-//					delete(body, key)
-//				}
-//			}
-//			bodySliced := append(bodySlice, body)
-//		}
-//		return bodySliced
-//	}
-//}
 
 func Endpoint(resource map[string]string) string {
 	name := strings.Replace(resource["name"], "-log", "/log", 1000000)
@@ -98,15 +77,19 @@ func Endpoint(resource map[string]string) string {
 	return name
 }
 
-func LastName(resource map[string]string) string {
-	name := strings.SplitN(resource["name"], "-", -1)
+func LastName(resource string) string {
+	name := strings.SplitN(resource, "-", -1)
 	return _case.CamelToKebab(strings.Join(name, " "))
 }
 
-func LastNamePlural(resource map[string]string) string {
+func LastNamePlural(resource string) string {
 	base := LastName(resource)
 	if strings.HasSuffix(base, "s") == true {
 		return base
+	}
+	if strings.HasSuffix(base, "s") == false {
+		ok := base + "s"
+		return ok
 	}
 	if strings.HasSuffix(base, "y") == true && strings.HasSuffix(base, "ey") == false {
 		return fmt.Sprintf("%bs", base[:1])

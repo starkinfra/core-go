@@ -134,7 +134,6 @@ func PostSingle(sdkVersion string, host string, apiVersion string, user user.Use
 	)
 
 	var response = api.FromApi(json)
-
 	cursor := response
 	return cursor, cursor
 }
@@ -152,7 +151,6 @@ func DeleteId(sdkVersion string, host string, apiVersion string, user user.Users
 	)
 	var response = api.FromApi(json)
 	return response
-	//return api.ToApi(entityJson), nil
 }
 
 func PatchId(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, id string, payload string, language string) struct{} {
