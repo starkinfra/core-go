@@ -4,38 +4,36 @@ import (
 	"core-go/starkcore/utils/hosts"
 	"core-go/starkcore/utils/rest"
 	"core-go/tests/utils/user"
-	"fmt"
 	"testing"
 )
 
 var resource_g = map[string]string{"name": "boleto"}
 
 func TestSuccessGetPage(t *testing.T) {
-	transactions, _ := rest.GetPage(
+	rest.GetPage(
 		"0.0.0",
 		hosts.Service.Bank,
 		"v2",
 		user.ExampleProject,
 		resource_g,
 		"pt-BR",
+		15,
 	)
-
-	fmt.Sprintf("%v", transactions)
 }
 
-//func TestSuccessGetId(t *testing.T) {
-//	transactions, _ := rest.GetId(
-//		"0.0.0",
-//		"",
-//		"v2",
-//		user.ExampleOrganization,
-//		resource_g,
-//		"",
-//		"pt-BR",
-//	)
-//
-//	fmt.Sprintf("%v", transactions)
-//}
+func TestSuccessGetId(t *testing.T) {
+	rest.GetId(
+		"0.0.0",
+		"",
+		"v2",
+		user.ExampleProject,
+		resource_g,
+		"",
+		"pt-BR",
+		15,
+	)
+}
+
 //
 //func TestSuccessGetContent(t *testing.T) {
 //	transactions, _ := rest.GetContent(

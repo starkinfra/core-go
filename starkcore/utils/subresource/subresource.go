@@ -1,6 +1,6 @@
 package subresource
 
 type Subresource struct {
-	ClassName struct{}
+	ClassName interface{}
 	Name      string
 }

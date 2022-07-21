@@ -2,21 +2,18 @@ package request
 
 import (
 	"core-go/starkcore/environment"
+	errors "core-go/starkcore/error"
 	u "core-go/starkcore/user/user"
 	"core-go/starkcore/utils/checks"
-	"encoding/json"
 	"fmt"
 	"github.com/starkbank/ecdsa-go/ellipticcurve/ecdsa"
-	"io/ioutil"
-	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 )
 
-func Fetch(host string, sdkVersion string, user u.Users, method string, path string, payload string, apiVersion string, language string) *http.Response {
+func Fetch(host string, sdkVersion string, user u.Users, method string, path string, payload string, apiVersion string, language string, timeout int) *http.Response {
 
 	sdkVersion = "v2"
 	language = "en-US"
@@ -42,26 +39,15 @@ func Fetch(host string, sdkVersion string, user u.Users, method string, path str
 	//agent := fmt.Sprintf("Golang-1.%m-SDK-%h-%s", goversion.Version, host, sdkVersion)
 	var agent = fmt.Sprintf("Golang-SDK-%v-%v", host, sdkVersion)
 
-	if payload == "" {
-		fmt.Println("BODY VAZIO")
-	}
-
 	var accessTime = strconv.FormatInt(time.Now().Unix(), 10)
 
 	var message = fmt.Sprintf("%v:%v:%v", "project/", accessTime, payload)
 
 	var signature = ecdsa.Sign(message, u.PrivateKey(user)).ToBase64()
 
-	fmt.Printf("\nO QUE ESTÁ SENDO ENVIADO PARA A API: %v", payload)
-	fmt.Printf("\nMESSAGE: %v\n", message)
-
-	client := http.Client{Timeout: time.Duration(15) * time.Second}
+	client := http.Client{Timeout: time.Duration(timeout) * time.Second}
 
 	req, err := http.NewRequest(method, url, strings.NewReader(payload))
-	if err != nil {
-		log.Fatal(err)
-		fmt.Println("deu erro aqui")
-	}
 
 	req.Header.Add("Access-Id", "project/")
 	req.Header.Add("Access-Time", accessTime)
@@ -70,40 +56,17 @@ func Fetch(host string, sdkVersion string, user u.Users, method string, path str
 	req.Header.Add("User-Agent", agent)
 	req.Header.Add("Accept-Language", language)
 
-	res, err := client.Do(req)
+	response, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
-		fmt.Printf("client: error making http request: %s\n", err)
-		os.Exit(1)
+		switch response.StatusCode {
+		case 400:
+			errors.InputError(err)
+		case 500:
+			errors.InternalServerError()
+		default:
+			return response
+		}
 	}
 
-	resBody, err := ioutil.ReadAll(res.Body)
-
-	if err != nil {
-		fmt.Printf("client: could not read response body: %s\n", err)
-	}
-
-	var m = map[string]interface{}{}
-	if err := json.Unmarshal(resBody, &m); err != nil {
-		panic(err)
-	}
-	//fmt.Println(sec)
-	//
-	//var m = make(map[string]string)
-	//json.Unmarshal(resBody, &m)
-
-	//HOW TO PRETTY PRINT
-	b, err := json.MarshalIndent(m, "", "  ")
-	if err != nil {
-		fmt.Println("error:", err)
-	}
-	fmt.Print(string(b))
-
-	// fmt.Println("ESSE EH O MISTERIOSO", m)
-	//fmt.Println(errsdc)
-
-	//var data struct{}
-	//json.Unmarshal(resBody, &data)
-
-	return res
+	return response
 }

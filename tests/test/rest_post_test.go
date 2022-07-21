@@ -9,7 +9,7 @@ import (
 )
 
 type boletos struct {
-	Boleto []boleto
+	Boletos []boleto
 }
 
 type boleto struct {
@@ -40,7 +40,7 @@ type boleto struct {
 	OurNumber     *string
 }
 
-var resource_s = map[string]string{"name": "boleto"}
+//
 
 func TestSuccessSingle(t *testing.T) {
 
@@ -54,21 +54,17 @@ func TestSuccessSingle(t *testing.T) {
 	var stateCode = "SP"
 	var zipCode = "01420-020"
 
-	var boletoSingle = []boleto{
-		{
-			Amount:      &amount,
-			Name:        &name,
-			TaxId:       &taxId,
-			StreetLine1: &streetLine1,
-			StreetLine2: &streetLine2,
-			District:    &district,
-			City:        &city,
-			StateCode:   &stateCode,
-			ZipCode:     &zipCode,
-		},
+	boletosingle := boleto{
+		Amount:      &amount,
+		Name:        &name,
+		TaxId:       &taxId,
+		StreetLine1: &streetLine1,
+		StreetLine2: &streetLine2,
+		District:    &district,
+		City:        &city,
+		StateCode:   &stateCode,
+		ZipCode:     &zipCode,
 	}
-
-	var boletosingle = boletos{Boleto: boletoSingle}
 
 	rest.PostSingle(
 		"0.0.0",
@@ -76,15 +72,16 @@ func TestSuccessSingle(t *testing.T) {
 		"v2",
 		user.ExampleProject,
 		resource_g,
-		api.ApiJson(boletosingle, resource_s),
+		api.ApiJson(boletosingle),
 		"pt-BR",
+		15,
 	)
 }
 
 func TestSuccessPostMulti(t *testing.T) {
 
 	var amount2 = 22222222222
-	var name2 = "PRIMEIRO TESTE DE POSTMULTI  NA TERÇA FEIRA"
+	var name2 = "PRIMEIRO TESTE DE POSTMULTI NA QUINTA FEIRA"
 	var taxId2 = "38.446.231/0001-04"
 	var streetLine12 = "Kubasch Street, 900"
 	var streetLine22 = ""
@@ -94,7 +91,7 @@ func TestSuccessPostMulti(t *testing.T) {
 	var zipCode2 = "01420-020"
 
 	var amount3 = 33333333333
-	var name3 = "SEGUNDO TESTE DE POSTMULTI  NA TERÇA FEIRA"
+	var name3 = "SEGUNDO TESTE DE POSTMULTI NA QUINTA FEIRA"
 	var taxId3 = "38.446.231/0001-04"
 	var streetLine13 = "Kubasch Street, 900"
 	var streetLine23 = ""
@@ -128,7 +125,7 @@ func TestSuccessPostMulti(t *testing.T) {
 		},
 	}
 
-	var boletomulti = boletos{Boleto: boletoMulti}
+	var boletomulti = boletos{Boletos: boletoMulti}
 
 	rest.PostMulti(
 		"0.0.0",
@@ -136,7 +133,8 @@ func TestSuccessPostMulti(t *testing.T) {
 		"v2",
 		user.ExampleProject,
 		resource_g,
-		api.ApiJson(boletomulti, resource_g),
+		api.ApiJson(boletomulti),
 		"pt-BR",
+		15,
 	)
 }

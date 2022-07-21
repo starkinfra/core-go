@@ -4,5 +4,4 @@ type Cache struct {
 	publicKey string
 }
 
-Cache cache := Cache()
-
+//var cache Cache{}

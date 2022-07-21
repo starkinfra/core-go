@@ -1,25 +1,16 @@
 package error
 
+import "errors"
+
 type Error struct {
 	Code    string
 	Message string
 }
 
-type InputError struct {
-	errors Error
+func InputError(error error) error {
+	return error
 }
 
-type InternalServerError struct {
-	Code    string
-	Message string
-}
-
-type UnkownError struct {
-	Code    string
-	Message string
-}
-
-type InvalidSignatureError struct {
-	Code    string
-	Message string
+func InternalServerError() error {
+	return errors.New("Houston, we have a problem.")
 }

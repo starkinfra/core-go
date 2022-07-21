@@ -6,3 +6,8 @@ type Resource struct {
 	Id          string
 	Subresource subresource.Subresource
 }
+
+type Resources struct {
+	Id          string
+	Subresource subresource.Subresource
+}

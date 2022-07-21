@@ -5,11 +5,12 @@ import (
 	"core-go/starkcore/utils/api"
 	"core-go/starkcore/utils/request"
 	"fmt"
-	"reflect"
+	//"math"
+	"net/http"
 )
 
-func GetPage(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, language string) (struct{}, struct{}) {
-	json := request.Fetch(
+func GetPage(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, language string, timeout int) (interface{}, interface{}) {
+	var json = request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -18,45 +19,35 @@ func GetPage(sdkVersion string, host string, apiVersion string, user user.Users,
 		"",
 		apiVersion,
 		language,
+		timeout,
 	)
 	var response = api.FromApi(json)
-	r := reflect.ValueOf(response)
-	typeOfS := r.Type()
-
-	for i := 0; i < r.NumField(); i++ {
-		fmt.Printf("%s\t%v\n", typeOfS.Field(i).Name, r.Field(i).Interface())
-	}
-
-	fmt.Println(response)
-
-	cursor := response
-	return cursor, cursor
-
+	var cursor = response
+	return response, cursor
 }
 
-func GetStream(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, language string) struct{} {
-	//if limit == nil {
-	//	var limitQuery = any
-	//}
-	//var limitQuery = math.Min(limit, 100)
-	json := request.Fetch(
-		host,
-		sdkVersion,
-		user,
-		"GET",
-		api.Endpoint(resource),
-		"",
-		apiVersion,
-		language,
-	)
-	var response = api.FromApi(json)
-	return response
-	//entityJson := response[api.LastName(resource)]
-	//return api.FromApiJson(resource, entityJson), nil
-}
+//func GetStream(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, language string, timeout int) map[string]interface{} {
+//	if limit == nil {
+//		var limitQuery map[string]interface{}
+//	}
+//	limitQuery = math.Min(limit, 100)
+//	var json = request.Fetch(
+//		host,
+//		sdkVersion,
+//		user,
+//		"GET",
+//		api.Endpoint(resource),
+//		"",
+//		apiVersion,
+//		language,
+//		timeout,
+//	)
+//	var response = api.FromApi(json)
+//	return response
+//}
 
-func GetId(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, id string, language string) struct{} {
-	json := request.Fetch(
+func GetId(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, id string, language string, timeout int) string {
+	var json = request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -65,15 +56,14 @@ func GetId(sdkVersion string, host string, apiVersion string, user user.Users, r
 		"",
 		apiVersion,
 		language,
+		timeout,
 	)
 	var response = api.FromApi(json)
 	return response
-	//entityJson := response[api.LastName(resource)]
-	//return api.FromApiJson(resource, entityJson), nil
 }
 
-func GetContent(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, id string, language string, subResourceName string) struct{} {
-	json := request.Fetch(
+func GetContent(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, id string, language string, subResourceName string, timeout int) *http.Response {
+	var json = request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -82,30 +72,29 @@ func GetContent(sdkVersion string, host string, apiVersion string, user user.Use
 		"",
 		apiVersion,
 		language,
+		timeout,
 	)
-	var response = api.FromApi(json)
-	return response
+	return json
 }
 
-func GetSubResource(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, language string) struct{} {
-	json := request.Fetch(
+func GetSubResource(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, id string, language string, subResourceName string, timeout int) string {
+	var json = request.Fetch(
 		host,
 		sdkVersion,
 		user,
 		"GET",
-		api.Endpoint(resource),
+		fmt.Sprintf("%v/%v/%v", api.Endpoint(resource), id, subResourceName),
 		"",
 		apiVersion,
 		language,
+		timeout,
 	)
 	var response = api.FromApi(json)
 	return response
-	//entityJson := response[api.LastName(resource)]
-	//return api.ToApi(entityJson), nil
 }
 
-func PostMulti(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, payload string, language string) (struct{}, struct{}) {
-	json := request.Fetch(
+func PostMulti(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, payload string, language string, timeout int) interface{} {
+	var json = request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -114,15 +103,14 @@ func PostMulti(sdkVersion string, host string, apiVersion string, user user.User
 		payload,
 		apiVersion,
 		language,
+		timeout,
 	)
 	var response = api.FromApi(json)
-	return response, struct{}{}
-	//entityJson := response[api.LastName(resource)]
-	//return api.ToApi(entityJson), nil
+	return response
 }
 
-func PostSingle(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, payload string, language string) (struct{}, struct{}) {
-	json := request.Fetch(
+func PostSingle(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, payload string, language string, timeout int) interface{} {
+	var json = request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -131,47 +119,49 @@ func PostSingle(sdkVersion string, host string, apiVersion string, user user.Use
 		payload,
 		apiVersion,
 		language,
+		timeout,
 	)
-
 	var response = api.FromApi(json)
-	cursor := response
-	return cursor, cursor
+	return response
 }
 
-func DeleteId(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, id string, payload string, language string) struct{} {
-	json := request.Fetch(
+func DeleteId(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, id string, payload string, language string, timeout int) interface{} {
+	var json = request.Fetch(
 		host,
 		sdkVersion,
 		user,
 		"DELETE",
-		fmt.Sprintf("%e/%i", api.Endpoint(resource), id),
+		fmt.Sprint(api.Endpoint(resource), "/", id),
 		payload,
 		apiVersion,
 		language,
+		timeout,
 	)
 	var response = api.FromApi(json)
 	return response
 }
 
-func PatchId(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, id string, payload string, language string) struct{} {
-	json := request.Fetch(
+func PatchId(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, id string, payload string, language string, timeout int) interface{} {
+	var json = request.Fetch(
 		host,
 		sdkVersion,
 		user,
 		"PATCH",
-		fmt.Sprintf("%e/%i", api.Endpoint(resource), id),
+		fmt.Sprintf(api.Endpoint(resource), "/", id),
 		payload,
 		apiVersion,
 		language,
+		timeout,
 	)
+
+	fmt.Println(json.Request)
+
 	var response = api.FromApi(json)
 	return response
-	//entity := response[api.LastName(resource)]
-	//return api.ToApi(entityJson), nil
 }
 
-func GetRaw(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, language string) struct{} {
-	json := request.Fetch(
+func GetRaw(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, language string, timeout int) interface{} {
+	var json = request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -180,6 +170,7 @@ func GetRaw(sdkVersion string, host string, apiVersion string, user user.Users, 
 		"",
 		apiVersion,
 		language,
+		timeout,
 	)
 	return api.FromApi(json)
 }
