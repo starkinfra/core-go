@@ -19,14 +19,14 @@ func Fetch(host string, sdkVersion string, user u.Users, method string, path str
 	language = "en-US"
 	language = checks.CheckLanguage(language)
 
-	var service = checks.CheckHost(host)
+	service := checks.CheckHost(host)
 
-	var baseUrl = environment.Environments{
-		Production: fmt.Sprintf("https://api.%s.com/%v", service, apiVersion),
-		Sandbox:    fmt.Sprintf("https://sandbox.api.%s.com/%v", service, apiVersion),
+	baseUrl := environment.Environments{
+		Production: fmt.Sprintf("https://api.%v.com/%v", service, apiVersion),
+		Sandbox:    fmt.Sprintf("https://sandbox.api.%v.com/%v", service, apiVersion),
 	}
 
-	var url = ""
+	url := ""
 	if user.Environment == "production" {
 		url = fmt.Sprintf("%v/%v", baseUrl.Production, path)
 	}
@@ -34,20 +34,20 @@ func Fetch(host string, sdkVersion string, user u.Users, method string, path str
 		url = fmt.Sprintf("%v/%v", baseUrl.Sandbox, path)
 	}
 
-	//https://development.api.starkinfra.com/v2/static-brcode
+	agent := fmt.Sprintf("Golang-SDK-%v-%v", host, sdkVersion)
 
-	//agent := fmt.Sprintf("Golang-1.%m-SDK-%h-%s", goversion.Version, host, sdkVersion)
-	var agent = fmt.Sprintf("Golang-SDK-%v-%v", host, sdkVersion)
+	accessTime := strconv.FormatInt(time.Now().Unix(), 10)
 
-	var accessTime = strconv.FormatInt(time.Now().Unix(), 10)
+	message := fmt.Sprintf("%v:%v:%v", "project/", accessTime, payload)
 
-	var message = fmt.Sprintf("%v:%v:%v", "project/", accessTime, payload)
-
-	var signature = ecdsa.Sign(message, u.PrivateKey(user)).ToBase64()
+	signature := ecdsa.Sign(message, u.PrivateKey(user)).ToBase64()
 
 	client := http.Client{Timeout: time.Duration(timeout) * time.Second}
 
 	req, err := http.NewRequest(method, url, strings.NewReader(payload))
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	req.Header.Add("Access-Id", "project/")
 	req.Header.Add("Access-Time", accessTime)
@@ -58,6 +58,7 @@ func Fetch(host string, sdkVersion string, user u.Users, method string, path str
 
 	response, err := client.Do(req)
 	if err != nil {
+		fmt.Println(err)
 		switch response.StatusCode {
 		case 400:
 			errors.InputError(err)

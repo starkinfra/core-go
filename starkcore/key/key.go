@@ -10,6 +10,15 @@ import (
 )
 
 func Create(path string) {
+	//Generate a new key pair
+	//Generates a secp256k1 ECDSA private/public key pair to be used in the API authentications
+	//
+	//Parameters (optional):
+	//	path [string]: path to save the keys .pem files. No files will be saved if this parameter isn't provided
+	//
+	//Return:
+	//	private and public key pems
+
 	private := privatekey.New(curve.Secp256k1)
 	public := private.PublicKey()
 

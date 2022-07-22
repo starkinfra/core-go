@@ -44,15 +44,15 @@ type boleto struct {
 
 func TestSuccessSingle(t *testing.T) {
 
-	var amount = 1111111111
-	var name = "PRIMEIRO TESTE DE POST SINGLE NA TERÇA FEIRA"
-	var taxId = "38.446.231/0001-04"
-	var streetLine1 = "Kubasch Street, 900"
-	var streetLine2 = ""
-	var district = "Ronny"
-	var city = "Emmet City"
-	var stateCode = "SP"
-	var zipCode = "01420-020"
+	amount := 1111111111
+	name := "PRIMEIRO TESTE DE POST SINGLE NA TERÇA FEIRA"
+	taxId := "38.446.231/0001-04"
+	streetLine1 := "Kubasch Street, 900"
+	streetLine2 := ""
+	district := "Ronny"
+	city := "Emmet City"
+	stateCode := "SP"
+	zipCode := "01420-020"
 
 	boletosingle := boleto{
 		Amount:      &amount,
@@ -80,27 +80,27 @@ func TestSuccessSingle(t *testing.T) {
 
 func TestSuccessPostMulti(t *testing.T) {
 
-	var amount2 = 22222222222
-	var name2 = "PRIMEIRO TESTE DE POSTMULTI NA QUINTA FEIRA"
-	var taxId2 = "38.446.231/0001-04"
-	var streetLine12 = "Kubasch Street, 900"
-	var streetLine22 = ""
-	var district2 = "Ronny"
-	var city2 = "Emmet City"
-	var stateCode2 = "SP"
-	var zipCode2 = "01420-020"
+	amount2 := 22222222222
+	name2 := "PRIMEIRO TESTE DE POSTMULTI NA QUINTA FEIRA"
+	taxId2 := "38.446.231/0001-04"
+	streetLine12 := "Kubasch Street, 900"
+	streetLine22 := ""
+	district2 := "Ronny"
+	city2 := "Emmet City"
+	stateCode2 := "SP"
+	zipCode2 := "01420-020"
 
-	var amount3 = 33333333333
-	var name3 = "SEGUNDO TESTE DE POSTMULTI NA QUINTA FEIRA"
-	var taxId3 = "38.446.231/0001-04"
-	var streetLine13 = "Kubasch Street, 900"
-	var streetLine23 = ""
-	var district3 = "Ronny"
-	var city3 = "Emmet City"
-	var stateCode3 = "SP"
-	var zipCode3 = "01420-020"
+	amount3 := 33333333333
+	name3 := "SEGUNDO TESTE DE POSTMULTI NA QUINTA FEIRA"
+	taxId3 := "38.446.231/0001-04"
+	streetLine13 := "Kubasch Street, 900"
+	streetLine23 := ""
+	district3 := "Ronny"
+	city3 := "Emmet City"
+	stateCode3 := "SP"
+	zipCode3 := "01420-020"
 
-	var boletoMulti = []boleto{
+	boletoMulti := []boleto{
 		{
 			Amount:      &amount2,
 			Name:        &name2,
@@ -125,7 +125,7 @@ func TestSuccessPostMulti(t *testing.T) {
 		},
 	}
 
-	var boletomulti = boletos{Boletos: boletoMulti}
+	boletomulti := boletos{Boletos: boletoMulti}
 
 	rest.PostMulti(
 		"0.0.0",

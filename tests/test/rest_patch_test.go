@@ -2,14 +2,11 @@ package test
 
 import (
 	"core-go/starkcore/utils/api"
+	"core-go/starkcore/utils/hosts"
 	"core-go/starkcore/utils/rest"
 	"core-go/tests/utils/user"
 	"testing"
 )
-
-type invoices struct {
-	Invoices []invoice
-}
 
 type invoice struct {
 	Amount         *int
@@ -41,19 +38,19 @@ var resource_v = map[string]string{"name": "invoice"}
 
 func TestSuccessPatch(t *testing.T) {
 
-	var status = "canceled"
+	status := "canceled"
 
-	var invoicePatch = invoice{
+	invoicePatch := invoice{
 		Status: &status,
 	}
 
 	rest.PatchId(
 		"0.0.0",
-		"",
+		hosts.Service.Bank,
 		"v2",
 		user.ExampleProject,
 		resource_v,
-		"",
+		"6459912880128000",
 		api.ApiJson(invoicePatch),
 		"pt-BR",
 		15,

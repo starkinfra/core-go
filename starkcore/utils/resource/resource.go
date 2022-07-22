@@ -1,13 +1,14 @@
 package resource
 
-import "core-go/starkcore/utils/subresource"
+import (
+	"core-go/starkcore/utils/subresource"
+)
 
 type Resource struct {
 	Id          string
 	Subresource subresource.Subresource
 }
 
-type Resources struct {
-	Id          string
-	Subresource subresource.Subresource
+func (R Resource) name(resurce Resource) Resource {
+	return resurce
 }

@@ -33,5 +33,5 @@ type Projects struct {
 // - pem [string]: private key in pem format. ex: "-----BEGIN PUBLIC KEY-----\nMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEyTIHK6jYuik6ktM9FIF3yCEYzpLjO5X/\ntqDioGM+R2RyW0QEo+1DG8BrUf4UXHSvCjtQ0yLppygz23z0yPZYfw==\n-----END PUBLIC KEY-----"
 
 func (p Projects) AccessId() string {
-	return fmt.Sprintf("project/%i", p.Id)
+	return fmt.Sprintf("project/%v", p.Id)
 }

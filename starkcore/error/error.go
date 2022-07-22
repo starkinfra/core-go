@@ -12,5 +12,5 @@ func InputError(error error) error {
 }
 
 func InternalServerError() error {
-	return errors.New("Houston, we have a problem.")
+	return errors.New("houston, we have a problem")
 }

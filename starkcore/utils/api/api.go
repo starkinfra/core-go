@@ -10,11 +10,10 @@ import (
 )
 
 func FromApi(response *http.Response) string {
-	var data = map[string]interface{}{}
-	var resBody, _ = ioutil.ReadAll(response.Body)
+	data := map[string]interface{}{}
+	resBody, _ := ioutil.ReadAll(response.Body)
 	json.Unmarshal(resBody, &data)
-	var rJson, _ = json.MarshalIndent(data, "", "  ")
-
+	rJson, _ := json.MarshalIndent(data, "", "  ")
 	return string(rJson)
 }
 
@@ -22,14 +21,13 @@ func ApiJson(payload interface{}) string {
 	m := map[string]interface{}{}
 	out, _ := json.Marshal(payload)
 	json.Unmarshal(out, &m)
-	jsons, _ := json.Marshal(CastJsonToApiFormat(m))
-
-	return string(jsons)
+	apiJson, _ := json.Marshal(CastJsonToApiFormat(m))
+	return string(apiJson)
 }
 
 func CastJsonToApiFormat(m interface{}) interface{} {
-	var apiJson = map[string]interface{}{}
-	var mJson = reflect.ValueOf(m)
+	apiJson := map[string]interface{}{}
+	mJson := reflect.ValueOf(m)
 	if mJson.Kind() != reflect.Map {
 		return m
 	}
@@ -42,7 +40,7 @@ func CastJsonToApiFormat(m interface{}) interface{} {
 			key = strcase.ToLowerCamel(key)
 
 			if v, ok := value.([]interface{}); ok {
-				var jsonSlice = []interface{}{}
+				jsonSlice := []interface{}{}
 				for _, val := range v {
 					jsonSlice = append(jsonSlice, CastJsonToApiFormat(val))
 				}
@@ -60,23 +58,23 @@ func CastJsonToApiFormat(m interface{}) interface{} {
 }
 
 func Endpoint(resource map[string]string) string {
-	var name = strings.Replace(resource["name"], "-log", "/log", 1000000)
-	name = strings.Replace(resource["name"], "-attempt", "/attempt", 1000000)
-	return name
+	endpoint := strings.Replace(resource["name"], "-log", "/log", 1000000)
+	endpoint = strings.Replace(resource["name"], "-attempt", "/attempt", 1000000)
+	return endpoint
 }
 
 func LastName(resource string) string {
-	var name = strings.SplitN(resource, "-", -1)
-	return strcase.ToKebab(strings.Join(name, " "))
+	last := strings.SplitN(resource, "-", -1)
+	return strcase.ToKebab(strings.Join(last, " "))
 }
 
 func LastNamePlural(resource string) string {
-	var base = LastName(resource)
-	if strings.HasSuffix(base, "s") == true {
-		return base
+	plural := LastName(resource)
+	if strings.HasSuffix(plural, "s") == true {
+		return plural
 	}
-	if strings.HasSuffix(base, "y") == true && strings.HasSuffix(base, "ey") == false {
-		return base[:len(base)-1] + "ies"
+	if strings.HasSuffix(plural, "y") == true && strings.HasSuffix(plural, "ey") == false {
+		return plural[:len(plural)-1] + "ies"
 	}
-	return base + "s"
+	return plural + "s"
 }

@@ -13,6 +13,6 @@ type Users struct {
 }
 
 func PrivateKey(user Users) *privatekey.PrivateKey {
-	var result = privatekey.FromPem(user.Pem)
+	result := privatekey.FromPem(user.Pem)
 	return &result
 }

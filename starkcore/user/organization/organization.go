@@ -30,7 +30,7 @@ type Organization struct {
 //
 //  Parameters (required):
 //  - id [string]: unique id required to identify organization. ex: "5656565656565656"
-//  - private_key [EllipticCurve.Organization()]: PEM string of the private key linked to the organization. ex: "-----BEGIN PUBLIC KEY-----\nMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEyTIHK6jYuik6ktM9FIF3yCEYzpLjO5X/\ntqDioGM+R2RyW0QEo+1DG8BrUf4UXHSvCjtQ0yLppygz23z0yPZYfw==\n-----END PUBLIC KEY-----"
+//  - private_key [string]: PEM string of the private key linked to the organization. ex: "-----BEGIN PUBLIC KEY-----\nMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEyTIHK6jYuik6ktM9FIF3yCEYzpLjO5X/\ntqDioGM+R2RyW0QEo+1DG8BrUf4UXHSvCjtQ0yLppygz23z0yPZYfw==\n-----END PUBLIC KEY-----"
 //  - environment [string]: environment where the organization is being used. ex: "sandbox" or "production"
 //  - workspace_id [string]: unique id of the accessed Workspace, if any. ex: None or "4848484848484848"
 //
@@ -39,9 +39,9 @@ type Organization struct {
 
 func (o Organization) AccessId() string {
 	if o.WorkspaceId == "" {
-		return fmt.Sprintf("organization/%i", o.Id)
+		return fmt.Sprintf("organization/%v", o.Id)
 	}
-	return fmt.Sprintf("organization/%i/workspace/%w", o.Id, o.WorkspaceId)
+	return fmt.Sprintf("organization/%v/workspace/%v", o.Id, o.WorkspaceId)
 }
 
 func Replace(workspaceId string, organization Organization) Organization {

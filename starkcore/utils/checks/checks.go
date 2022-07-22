@@ -12,25 +12,22 @@ import (
 
 func CheckEnvironment(env string) string {
 	t := testing.T{}
-	message := fmt.Sprintf("Select a valid environment %m", environment.Environment)
-	assert.Containsf(&t, environment.Environment, env, message)
+	assert.Containsf(&t, environment.Environment, env, fmt.Sprintf("Select a valid environment %v", environment.Environment))
 	return env
 }
 
 func CheckPrivateKey(pem string) string {
 	if privatekey.FromPem(pem).Curve.Name == "secp256k1" {
-
+		return pem
 	} else {
-		return fmt.Sprintf("Private-key must be valid secp256k1 ECDSA string in pem format")
+		panic(fmt.Sprintf("Private-key must be valid secp256k1 ECDSA string in pem format"))
 	}
-	return pem
 }
 
 func CheckUser(user user.Users) user.Users {
-	vari, _ := fmt.Printf("%T", user)
-	variable := string(vari)
-	if variable != "user.User" {
-		fmt.Printf("A user is required to access our API. Check our README: https://github.com/starkinfra/core-python/")
+	userT, _ := fmt.Printf("%T", user)
+	if string(userT) != "user.User" {
+		fmt.Printf("A user is required to access our API. Check our README: https://github.com/starkinfra/core-go/")
 	}
 	return user
 }
@@ -38,9 +35,7 @@ func CheckUser(user user.Users) user.Users {
 func CheckLanguage(language string) string {
 	t := testing.T{}
 	acceptedLanguages := []string{"en-US", "pt-BR"}
-
-	message := fmt.Sprintf("Language must be one from %a", acceptedLanguages)
-	assert.Containsf(&t, language, acceptedLanguages, message)
+	assert.Containsf(&t, language, acceptedLanguages, fmt.Sprintf("Language must be one from %v", acceptedLanguages))
 	return language
 }
 

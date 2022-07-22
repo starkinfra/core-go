@@ -1,6 +1,9 @@
 package subresource
 
 type Subresource struct {
-	ClassName interface{}
-	Name      string
+	Name string
+}
+
+func (R Resource) name(resurce Resource) Resource {
+	return resurce
 }

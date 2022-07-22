@@ -10,7 +10,7 @@ import (
 )
 
 func GetPage(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, language string, timeout int) (interface{}, interface{}) {
-	var json = request.Fetch(
+	json := request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -21,8 +21,8 @@ func GetPage(sdkVersion string, host string, apiVersion string, user user.Users,
 		language,
 		timeout,
 	)
-	var response = api.FromApi(json)
-	var cursor = response
+	response := api.FromApi(json)
+	cursor := response
 	return response, cursor
 }
 
@@ -47,7 +47,7 @@ func GetPage(sdkVersion string, host string, apiVersion string, user user.Users,
 //}
 
 func GetId(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, id string, language string, timeout int) string {
-	var json = request.Fetch(
+	json := request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -58,12 +58,12 @@ func GetId(sdkVersion string, host string, apiVersion string, user user.Users, r
 		language,
 		timeout,
 	)
-	var response = api.FromApi(json)
+	response := api.FromApi(json)
 	return response
 }
 
 func GetContent(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, id string, language string, subResourceName string, timeout int) *http.Response {
-	var json = request.Fetch(
+	json := request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -78,7 +78,7 @@ func GetContent(sdkVersion string, host string, apiVersion string, user user.Use
 }
 
 func GetSubResource(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, id string, language string, subResourceName string, timeout int) string {
-	var json = request.Fetch(
+	json := request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -89,12 +89,12 @@ func GetSubResource(sdkVersion string, host string, apiVersion string, user user
 		language,
 		timeout,
 	)
-	var response = api.FromApi(json)
+	response := api.FromApi(json)
 	return response
 }
 
 func PostMulti(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, payload string, language string, timeout int) interface{} {
-	var json = request.Fetch(
+	json := request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -105,12 +105,12 @@ func PostMulti(sdkVersion string, host string, apiVersion string, user user.User
 		language,
 		timeout,
 	)
-	var response = api.FromApi(json)
+	response := api.FromApi(json)
 	return response
 }
 
 func PostSingle(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, payload string, language string, timeout int) interface{} {
-	var json = request.Fetch(
+	json := request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -121,12 +121,12 @@ func PostSingle(sdkVersion string, host string, apiVersion string, user user.Use
 		language,
 		timeout,
 	)
-	var response = api.FromApi(json)
+	response := api.FromApi(json)
 	return response
 }
 
 func DeleteId(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, id string, payload string, language string, timeout int) interface{} {
-	var json = request.Fetch(
+	json := request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -137,36 +137,33 @@ func DeleteId(sdkVersion string, host string, apiVersion string, user user.Users
 		language,
 		timeout,
 	)
-	var response = api.FromApi(json)
+	response := api.FromApi(json)
 	return response
 }
 
 func PatchId(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, id string, payload string, language string, timeout int) interface{} {
-	var json = request.Fetch(
+	json := request.Fetch(
 		host,
 		sdkVersion,
 		user,
 		"PATCH",
-		fmt.Sprintf(api.Endpoint(resource), "/", id),
+		fmt.Sprint(api.Endpoint(resource), "/", id),
 		payload,
 		apiVersion,
 		language,
 		timeout,
 	)
-
-	fmt.Println(json.Request)
-
-	var response = api.FromApi(json)
+	response := api.FromApi(json)
 	return response
 }
 
-func GetRaw(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, language string, timeout int) interface{} {
-	var json = request.Fetch(
+func GetRaw(sdkVersion string, host string, apiVersion string, user user.Users, language string, timeout int) string {
+	json := request.Fetch(
 		host,
 		sdkVersion,
 		user,
 		"GET",
-		api.Endpoint(resource),
+		path,
 		"",
 		apiVersion,
 		language,

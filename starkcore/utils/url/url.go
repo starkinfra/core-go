@@ -1,7 +1,16 @@
 package url
 
-func UrlEncode() {
-}
+import (
+	"core-go/starkcore/utils/api"
+	"fmt"
+)
 
-func ValueToString() {
+func UrlEncode(params interface{}) string {
+	params = api.CastJsonToApiFormat(params)
+	if params != nil {
+		responseQuery := fmt.Sprintf("?", params)
+		return (responseQuery)
+	} else {
+		return ""
+	}
 }
