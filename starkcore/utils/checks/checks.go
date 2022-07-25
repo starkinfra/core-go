@@ -24,10 +24,10 @@ func CheckPrivateKey(pem string) string {
 	}
 }
 
-func CheckUser(user user.Users) user.Users {
+func CheckUser(user user.User) user.User {
 	userT, _ := fmt.Printf("%T", user)
 	if string(userT) != "user.User" {
-		fmt.Printf("A user is required to access our API. Check our README: https://github.com/starkinfra/core-go/")
+		panic(fmt.Sprintf("A user is required to access our API. Check our README: https://github.com/starkinfra/core-go/"))
 	}
 	return user
 }

@@ -8,11 +8,11 @@ import (
 	"testing"
 )
 
-type boletos struct {
-	Boletos []boleto
+type Boletos struct {
+	Boletos []Boleto
 }
 
-type boleto struct {
+type Boleto struct {
 	Amount        *int
 	Name          *string
 	TaxId         *string
@@ -54,7 +54,7 @@ func TestSuccessSingle(t *testing.T) {
 	stateCode := "SP"
 	zipCode := "01420-020"
 
-	boletosingle := boleto{
+	boletosingle := Boleto{
 		Amount:      &amount,
 		Name:        &name,
 		TaxId:       &taxId,
@@ -75,6 +75,7 @@ func TestSuccessSingle(t *testing.T) {
 		api.ApiJson(boletosingle),
 		"pt-BR",
 		15,
+		nil,
 	)
 }
 
@@ -100,7 +101,7 @@ func TestSuccessPostMulti(t *testing.T) {
 	stateCode3 := "SP"
 	zipCode3 := "01420-020"
 
-	boletoMulti := []boleto{
+	boletoMulti := []Boleto{
 		{
 			Amount:      &amount2,
 			Name:        &name2,
@@ -125,7 +126,7 @@ func TestSuccessPostMulti(t *testing.T) {
 		},
 	}
 
-	boletomulti := boletos{Boletos: boletoMulti}
+	boletomulti := Boletos{Boletos: boletoMulti}
 
 	rest.PostMulti(
 		"0.0.0",
@@ -136,5 +137,6 @@ func TestSuccessPostMulti(t *testing.T) {
 		api.ApiJson(boletomulti),
 		"pt-BR",
 		15,
+		nil,
 	)
 }

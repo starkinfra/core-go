@@ -1,3 +1,3 @@
 package cache
 
-var cache map[interface{}]interface{}
+var Cache map[interface{}]interface{}

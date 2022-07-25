@@ -5,11 +5,11 @@ import (
 	"core-go/starkcore/utils/api"
 	"core-go/starkcore/utils/request"
 	"fmt"
-	//"math"
+	"math"
 	"net/http"
 )
 
-func GetPage(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, language string, timeout int) (interface{}, interface{}) {
+func GetPage(sdkVersion string, host string, apiVersion string, user user.User, resource interface{}, language string, timeout int, query map[string]interface{}) (interface{}, interface{}) {
 	json := request.Fetch(
 		host,
 		sdkVersion,
@@ -20,33 +20,50 @@ func GetPage(sdkVersion string, host string, apiVersion string, user user.Users,
 		apiVersion,
 		language,
 		timeout,
+		query,
 	)
-	response := api.FromApi(json)
-	cursor := response
-	return response, cursor
+	entities := api.FromApi(json)
+	cursor := entities
+	return entities, cursor
 }
 
-//func GetStream(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, language string, timeout int) map[string]interface{} {
-//	if limit == nil {
-//		var limitQuery map[string]interface{}
-//	}
-//	limitQuery = math.Min(limit, 100)
-//	var json = request.Fetch(
-//		host,
-//		sdkVersion,
-//		user,
-//		"GET",
-//		api.Endpoint(resource),
-//		"",
-//		apiVersion,
-//		language,
-//		timeout,
-//	)
-//	var response = api.FromApi(json)
-//	return response
-//}
+func GetStream(sdkVersion string, host string, apiVersion string, user user.User, resource map[string]string, language string, timeout int, limit int, query map[string]interface{}) map[string]interface{} {
+	limitQuery := map[string]interface{}{}
 
-func GetId(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, id string, language string, timeout int) string {
+	if limit != 0 {
+		limitQuery = map[string]interface{}{"limit": int(math.Min(float64(limit), 100))}
+	}
+
+	for {
+		json := request.Fetch(
+			host,
+			sdkVersion,
+			user,
+			"GET",
+			api.Endpoint(resource),
+			"",
+			apiVersion,
+			language,
+			timeout,
+			limitQuery,
+		)
+
+		response := api.FromApi(json)
+		cursor := response
+
+		if limit != 0 {
+			limit -= 100
+			query["limit"] = int(math.Min(float64(limit), 100))
+		}
+
+		if cursor == "" || (limit != 0 && limit <= 0) {
+			break
+		}
+	}
+	return nil
+}
+
+func GetId(sdkVersion string, host string, apiVersion string, user user.User, resource map[string]string, id string, language string, timeout int, query map[string]interface{}) string {
 	json := request.Fetch(
 		host,
 		sdkVersion,
@@ -57,43 +74,52 @@ func GetId(sdkVersion string, host string, apiVersion string, user user.Users, r
 		apiVersion,
 		language,
 		timeout,
+		query,
 	)
-	response := api.FromApi(json)
-	return response
+	entity := api.FromApi(json)
+	return entity
 }
 
-func GetContent(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, id string, language string, subResourceName string, timeout int) *http.Response {
+func GetContent(sdkVersion string, host string, apiVersion string, user user.User, resource map[string]string, id string, language string, subResourceName string, timeout int, query map[string]interface{}) *http.Response {
 	json := request.Fetch(
 		host,
 		sdkVersion,
 		user,
 		"GET",
-		fmt.Sprintf("%v/%v/%v", api.Endpoint(resource), id, subResourceName),
+		fmt.Sprintf("%v/%v/%v",
+			api.Endpoint(resource),
+			id,
+			subResourceName),
 		"",
 		apiVersion,
 		language,
 		timeout,
+		query,
 	)
 	return json
 }
 
-func GetSubResource(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, id string, language string, subResourceName string, timeout int) string {
+func GetSubResource(sdkVersion string, host string, apiVersion string, user user.User, resource map[string]string, id string, language string, subResourceName string, timeout int, query map[string]interface{}) string {
 	json := request.Fetch(
 		host,
 		sdkVersion,
 		user,
 		"GET",
-		fmt.Sprintf("%v/%v/%v", api.Endpoint(resource), id, subResourceName),
+		fmt.Sprintf("%v/%v/%v",
+			api.Endpoint(resource),
+			id,
+			subResourceName),
 		"",
 		apiVersion,
 		language,
 		timeout,
+		query,
 	)
 	response := api.FromApi(json)
 	return response
 }
 
-func PostMulti(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, payload string, language string, timeout int) interface{} {
+func PostMulti(sdkVersion string, host string, apiVersion string, user user.User, resource map[string]string, payload string, language string, timeout int, query map[string]interface{}) interface{} {
 	json := request.Fetch(
 		host,
 		sdkVersion,
@@ -104,12 +130,13 @@ func PostMulti(sdkVersion string, host string, apiVersion string, user user.User
 		apiVersion,
 		language,
 		timeout,
+		query,
 	)
 	response := api.FromApi(json)
 	return response
 }
 
-func PostSingle(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, payload string, language string, timeout int) interface{} {
+func PostSingle(sdkVersion string, host string, apiVersion string, user user.User, resource map[string]string, payload string, language string, timeout int, query map[string]interface{}) interface{} {
 	json := request.Fetch(
 		host,
 		sdkVersion,
@@ -120,12 +147,13 @@ func PostSingle(sdkVersion string, host string, apiVersion string, user user.Use
 		apiVersion,
 		language,
 		timeout,
+		query,
 	)
-	response := api.FromApi(json)
-	return response
+	entityJson := api.FromApi(json)
+	return entityJson
 }
 
-func DeleteId(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, id string, payload string, language string, timeout int) interface{} {
+func DeleteId(sdkVersion string, host string, apiVersion string, user user.User, resource map[string]string, id string, payload string, language string, timeout int, query map[string]interface{}) interface{} {
 	json := request.Fetch(
 		host,
 		sdkVersion,
@@ -136,12 +164,13 @@ func DeleteId(sdkVersion string, host string, apiVersion string, user user.Users
 		apiVersion,
 		language,
 		timeout,
+		query,
 	)
-	response := api.FromApi(json)
-	return response
+	entity := api.FromApi(json)
+	return entity
 }
 
-func PatchId(sdkVersion string, host string, apiVersion string, user user.Users, resource map[string]string, id string, payload string, language string, timeout int) interface{} {
+func PatchId(sdkVersion string, host string, apiVersion string, user user.User, resource map[string]string, id string, payload string, language string, timeout int, query map[string]interface{}) interface{} {
 	json := request.Fetch(
 		host,
 		sdkVersion,
@@ -152,12 +181,13 @@ func PatchId(sdkVersion string, host string, apiVersion string, user user.Users,
 		apiVersion,
 		language,
 		timeout,
+		query,
 	)
-	response := api.FromApi(json)
-	return response
+	entity := api.FromApi(json)
+	return entity
 }
 
-func GetRaw(sdkVersion string, host string, apiVersion string, user user.Users, language string, timeout int) string {
+func GetRaw(sdkVersion string, host string, path string, apiVersion string, user user.User, language string, timeout int, query map[string]interface{}) string {
 	json := request.Fetch(
 		host,
 		sdkVersion,
@@ -168,6 +198,7 @@ func GetRaw(sdkVersion string, host string, apiVersion string, user user.Users, 
 		apiVersion,
 		language,
 		timeout,
+		query,
 	)
 	return api.FromApi(json)
 }

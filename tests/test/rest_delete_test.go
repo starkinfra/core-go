@@ -20,5 +20,6 @@ func TestSuccessDel(t *testing.T) {
 		"",
 		"pt-BR",
 		15,
+		nil,
 	)
 }

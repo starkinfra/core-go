@@ -54,5 +54,6 @@ func TestSuccessPatch(t *testing.T) {
 		api.ApiJson(invoicePatch),
 		"pt-BR",
 		15,
+		nil,
 	)
 }

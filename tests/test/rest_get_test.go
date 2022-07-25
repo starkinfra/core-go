@@ -7,7 +7,12 @@ import (
 	"testing"
 )
 
-var resource_g = map[string]string{"name": "boleto"}
+type Recursos struct {
+	Class Boleto
+	Name  string
+}
+
+var resource = Recursos{Class: Boleto{}, Name: "Boleto"}
 
 func TestSuccessGetPage(t *testing.T) {
 	rest.GetPage(
@@ -15,88 +20,80 @@ func TestSuccessGetPage(t *testing.T) {
 		hosts.Service.Bank,
 		"v2",
 		user.ExampleProject,
-		resource_g,
+		resource,
 		"pt-BR",
 		15,
+		nil,
 	)
 }
 
 func TestSuccessGetId(t *testing.T) {
 	rest.GetId(
 		"0.0.0",
-		"",
+		hosts.Service.Bank,
 		"v2",
 		user.ExampleProject,
 		resource_g,
 		"",
 		"pt-BR",
 		15,
+		nil,
 	)
 }
 
-//
-//func TestSuccessGetContent(t *testing.T) {
-//	transactions, _ := rest.GetContent(
-//		"0.0.0",
-//		"",
-//		"v2",
-//		user.ExampleOrganization,
-//		resource_g,
-//		"",
-//		"pt-BR",
-//		"",
-//	)
-//
-//	fmt.Sprintf("%v", transactions)
-//}
-//
-//func TestSuccessGetRaw(t *testing.T) {
-//	transactions, _ := rest.GetRaw(
-//		"0.0.0",
-//		"",
-//		"v2",
-//		user.ExampleOrganization,
-//		resource_g,
-//		"pt-BR",
-//	)
-//
-//	fmt.Sprintf("%v", transactions)
-//}
-//
-//func TestSuccessGetStream(t *testing.T) {
-//	transactions, _ := rest.GetStream(
-//		"0.0.0",
-//		"",
-//		"v2",
-//		user.ExampleOrganization,
-//		resource_g,
-//		"pt-BR",
-//	)
-//
-//	fmt.Sprintf("%v", transactions)
-//}
-//
-//func TestSuccessGetSubResource(t *testing.T) {
-//	transactions, _ := rest.GetSubResource(
-//		"0.0.0",
-//		"",
-//		"v2",
-//		user.ExampleOrganization,
-//		resource_g,
-//		"pt-BR",
-//	)
-//
-//	fmt.Sprintf("%v", transactions)
-//}
-//
-//func TestSuccessGetSubResources(t *testing.T) {
-//	transactions, _ := rest.GetSubResources(
-//		"0.0.0",
-//		"",
-//		"v2",
-//		user.ExampleOrganization,
-//		resource_g,
-//	)
-//
-//	fmt.Sprintf("%v", transactions)
-//}
+func TestSuccessGetContent(t *testing.T) {
+	rest.GetContent(
+		"0.0.0",
+		hosts.Service.Bank,
+		"v2",
+		user.ExampleProject,
+		resource_g,
+		"",
+		"pt-BR",
+		"",
+		15,
+		nil,
+	)
+}
+
+func TestSuccessGetRaw(t *testing.T) {
+	rest.GetRaw(
+		"0.0.0",
+		hosts.Service.Bank,
+		"v2",
+		"v2",
+		user.ExampleProject,
+		"pt-BR",
+		15,
+		nil,
+	)
+}
+
+func TestSuccessGetStream(t *testing.T) {
+	rest.GetStream(
+		"0.0.0",
+		hosts.Service.Bank,
+		"v2",
+		user.ExampleProject,
+		resource_g,
+		"pt-BR",
+		15,
+		0,
+		nil,
+	)
+}
+
+func TestSuccessGetSubResource(t *testing.T) {
+	rest.GetSubResource(
+		"0.0.0",
+		hosts.Service.Bank,
+		"v2",
+		user.ExampleProject,
+		resource_g,
+		"",
+		"pt-BR",
+		"",
+		15,
+		nil,
+	)
+}

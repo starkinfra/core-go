@@ -2,6 +2,7 @@ package resource
 
 import (
 	"core-go/starkcore/utils/subresource"
+	"fmt"
 )
 
 type Resource struct {
@@ -9,6 +10,6 @@ type Resource struct {
 	Subresource subresource.Subresource
 }
 
-func (R Resource) name(resurce Resource) Resource {
-	return resurce
+func (R Resource) Resource() string {
+	return fmt.Sprintf("%v[%v]", R.Subresource.Name, R.Id)
 }

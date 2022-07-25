@@ -3,6 +3,7 @@ package project
 import (
 	"core-go/starkcore/user/user"
 	"fmt"
+	"github.com/starkbank/ecdsa-go/ellipticcurve/privatekey"
 )
 
 type Projects struct {
@@ -23,15 +24,24 @@ type Projects struct {
 // each request or may be defined as the default user at the start (See README).
 //
 // Parameters (required):
-// - id [string]: unique id required to identify project. ex: "5656565656565656"
-// - private_key [EllipticCurve.Project()]: PEM string of the private key linked to the project. ex: "-----BEGIN PUBLIC KEY-----\nMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEyTIHK6jYuik6ktM9FIF3yCEYzpLjO5X/\ntqDioGM+R2RyW0QEo+1DG8BrUf4UXHSvCjtQ0yLppygz23z0yPZYfw==\n-----END PUBLIC KEY-----"
-// - environment [string]: environment where the project is being used. ex: "sandbox" or "production"
+// - Id [string]: unique id required to identify project. ex: "5656565656565656"
+// - PrivateKey [string]: PEM string of the private key linked to the project. ex: "-----BEGIN PUBLIC KEY-----\nMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEyTIHK6jYuik6ktM9FIF3yCEYzpLjO5X/\ntqDioGM+R2RyW0QEo+1DG8BrUf4UXHSvCjtQ0yLppygz23z0yPZYfw==\n-----END PUBLIC KEY-----"
+// - Environment [string]: environment where the project is being used. ex: "sandbox" or "production"
 //
 // Attributes (return-only):
-// - name [string, default ""]: project name. ex: "MyProject"
-// - allowed_ips [list of strings]: list containing the strings of the ips allowed to make requests on behalf of this project. ex: ["190.190.0.50"]
-// - pem [string]: private key in pem format. ex: "-----BEGIN PUBLIC KEY-----\nMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEyTIHK6jYuik6ktM9FIF3yCEYzpLjO5X/\ntqDioGM+R2RyW0QEo+1DG8BrUf4UXHSvCjtQ0yLppygz23z0yPZYfw==\n-----END PUBLIC KEY-----"
+// - Name [string]: project name. ex: "MyProject"
+// - AllowedIps [list of strings]: list containing the strings of the ips allowed to make requests on behalf of this project. ex: ["190.190.0.50"]
+// - Pem [string]: private key in pem format. ex: "-----BEGIN PUBLIC KEY-----\nMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEyTIHK6jYuik6ktM9FIF3yCEYzpLjO5X/\ntqDioGM+R2RyW0QEo+1DG8BrUf4UXHSvCjtQ0yLppygz23z0yPZYfw==\n-----END PUBLIC KEY-----"
 
 func (p Projects) AccessId() string {
-	return fmt.Sprintf("project/%v", p.Id)
+	return fmt.Sprintf("project/%v", p.Id.Id)
+}
+
+func (p Projects) Environments() string {
+	return fmt.Sprintf("%v", p.Environment.Environment)
+}
+
+func (p Projects) PrivateKeys() *privatekey.PrivateKey {
+	result := privatekey.FromPem(p.PrivateKey.Pem)
+	return &result
 }

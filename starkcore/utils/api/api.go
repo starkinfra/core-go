@@ -10,26 +10,26 @@ import (
 )
 
 func FromApi(response *http.Response) string {
-	data := map[string]interface{}{}
+	fApi := map[string]interface{}{}
 	resBody, _ := ioutil.ReadAll(response.Body)
-	json.Unmarshal(resBody, &data)
-	rJson, _ := json.MarshalIndent(data, "", "  ")
+	json.Unmarshal(resBody, &fApi)
+	rJson, _ := json.MarshalIndent(fApi, "", "  ")
 	return string(rJson)
 }
 
 func ApiJson(payload interface{}) string {
-	m := map[string]interface{}{}
+	tApi := map[string]interface{}{}
 	out, _ := json.Marshal(payload)
-	json.Unmarshal(out, &m)
-	apiJson, _ := json.Marshal(CastJsonToApiFormat(m))
+	json.Unmarshal(out, &tApi)
+	apiJson, _ := json.Marshal(CastJsonToApiFormat(tApi))
 	return string(apiJson)
 }
 
-func CastJsonToApiFormat(m interface{}) interface{} {
+func CastJsonToApiFormat(tApi interface{}) interface{} {
 	apiJson := map[string]interface{}{}
-	mJson := reflect.ValueOf(m)
+	mJson := reflect.ValueOf(tApi)
 	if mJson.Kind() != reflect.Map {
-		return m
+		return tApi
 	}
 
 	if typedJson, ok := mJson.Interface().(map[string]interface{}); ok {
@@ -57,24 +57,24 @@ func CastJsonToApiFormat(m interface{}) interface{} {
 	return apiJson
 }
 
-func Endpoint(resource map[string]string) string {
+func Endpoint(resource map[string]interface{}) string {
 	endpoint := strings.Replace(resource["name"], "-log", "/log", 1000000)
 	endpoint = strings.Replace(resource["name"], "-attempt", "/attempt", 1000000)
 	return endpoint
 }
 
-func LastName(resource string) string {
-	last := strings.SplitN(resource, "-", -1)
-	return strcase.ToKebab(strings.Join(last, " "))
-}
-
-func LastNamePlural(resource string) string {
-	plural := LastName(resource)
-	if strings.HasSuffix(plural, "s") == true {
-		return plural
-	}
-	if strings.HasSuffix(plural, "y") == true && strings.HasSuffix(plural, "ey") == false {
-		return plural[:len(plural)-1] + "ies"
-	}
-	return plural + "s"
-}
+//func LastName(resource string) string {
+//	last := strings.SplitN(resource, "-", -1)
+//	return strcase.ToKebab(strings.Join(last, " "))
+//}
+//
+//func LastNamePlural(resource string) string {
+//	plural := LastName(resource)
+//	if strings.HasSuffix(plural, "s") == true {
+//		return plural
+//	}
+//	if strings.HasSuffix(plural, "y") == true && strings.HasSuffix(plural, "ey") == false {
+//		return plural[:len(plural)-1] + "ies"
+//	}
+//	return plural + "s"
+//}
