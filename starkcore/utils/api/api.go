@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/iancoleman/strcase"
 	"io/ioutil"
 	"net/http"
@@ -13,7 +14,10 @@ func FromApi(response *http.Response) string {
 	fApi := map[string]interface{}{}
 	resBody, _ := ioutil.ReadAll(response.Body)
 	json.Unmarshal(resBody, &fApi)
+	fmt.Println("RESBODY", string(resBody))
+	fmt.Println("FAPI: ", fApi)
 	rJson, _ := json.MarshalIndent(fApi, "", "  ")
+	fmt.Println(string(rJson))
 	return string(rJson)
 }
 
@@ -57,17 +61,17 @@ func CastJsonToApiFormat(tApi interface{}) interface{} {
 	return apiJson
 }
 
-func Endpoint(resource map[string]interface{}) string {
-	endpoint := strings.Replace(resource["name"], "-log", "/log", 1000000)
-	endpoint = strings.Replace(resource["name"], "-attempt", "/attempt", 1000000)
+func Endpoint(resource map[string]string) string {
+	endpoint := strings.Replace(LastName(resource["name"]), "-log", "/log", 1000000)
+	endpoint = strings.Replace(LastName(resource["name"]), "-attempt", "/attempt", 1000000)
 	return endpoint
 }
 
-//func LastName(resource string) string {
-//	last := strings.SplitN(resource, "-", -1)
-//	return strcase.ToKebab(strings.Join(last, " "))
-//}
-//
+func LastName(resource string) string {
+	last := strings.SplitN(resource, "-", -1)
+	return strcase.ToKebab(strings.Join(last, " "))
+}
+
 //func LastNamePlural(resource string) string {
 //	plural := LastName(resource)
 //	if strings.HasSuffix(plural, "s") == true {

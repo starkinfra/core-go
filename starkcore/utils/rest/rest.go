@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-func GetPage(sdkVersion string, host string, apiVersion string, user user.User, resource interface{}, language string, timeout int, query map[string]interface{}) (interface{}, interface{}) {
+func GetPage(sdkVersion string, host string, apiVersion string, user user.User, resource map[string]string, language string, timeout int, query map[string]interface{}) (interface{}, interface{}) {
 	json := request.Fetch(
 		host,
 		sdkVersion,

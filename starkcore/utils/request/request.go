@@ -18,7 +18,6 @@ func Fetch(host string, sdkVersion string, user u.User, method string, path stri
 	url := ""
 	sdkVersion = "v2"
 	language = "en-US"
-	user = checks.CheckUser(user)
 	language = checks.CheckLanguage(language)
 	service := checks.CheckHost(host)
 	baseUrl := environment.Environments{
@@ -32,6 +31,8 @@ func Fetch(host string, sdkVersion string, user u.User, method string, path stri
 	if user.Environments() == "sandbox" {
 		url = fmt.Sprintf("%v/%v%v", baseUrl.Sandbox, path, url2.UrlEncode(query))
 	}
+
+	fmt.Println("URL: ", url)
 
 	agent := fmt.Sprintf("Golang-SDK-%v-%v", host, sdkVersion)
 	accessTime := strconv.FormatInt(time.Now().Unix(), 10)
@@ -52,7 +53,6 @@ func Fetch(host string, sdkVersion string, user u.User, method string, path stri
 
 	response, err := client.Do(req)
 	if err != nil {
-		fmt.Println("ERRO", err)
 		switch response.StatusCode {
 		case 400:
 			errors.InputError(response.Body)

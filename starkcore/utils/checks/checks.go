@@ -2,7 +2,6 @@ package checks
 
 import (
 	"core-go/starkcore/environment"
-	"core-go/starkcore/user/user"
 	"core-go/starkcore/utils/hosts"
 	"fmt"
 	"github.com/starkbank/ecdsa-go/ellipticcurve/privatekey"
@@ -22,14 +21,6 @@ func CheckPrivateKey(pem string) string {
 	} else {
 		panic(fmt.Sprintf("Private-key must be valid secp256k1 ECDSA string in pem format"))
 	}
-}
-
-func CheckUser(user user.User) user.User {
-	userT, _ := fmt.Printf("%T", user)
-	if string(userT) != "user.User" {
-		panic(fmt.Sprintf("A user is required to access our API. Check our README: https://github.com/starkinfra/core-go/"))
-	}
-	return user
 }
 
 func CheckLanguage(language string) string {
