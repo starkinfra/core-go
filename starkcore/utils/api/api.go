@@ -2,23 +2,25 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/iancoleman/strcase"
-	"io/ioutil"
 	"net/http"
 	"reflect"
 	"strings"
 )
 
-func FromApi(response *http.Response) string {
-	fApi := map[string]interface{}{}
-	resBody, _ := ioutil.ReadAll(response.Body)
-	json.Unmarshal(resBody, &fApi)
-	fmt.Println("RESBODY", string(resBody))
-	fmt.Println("FAPI: ", fApi)
-	rJson, _ := json.MarshalIndent(fApi, "", "  ")
-	fmt.Println(string(rJson))
-	return string(rJson)
+//func FromApi(response *http.Response) string {
+//	fApi := map[string]interface{}{}
+//	resBody, _ := ioutil.ReadAll(response.Body)
+//	json.Unmarshal(resBody, &fApi)
+//	fmt.Println("RESBODY", string(resBody))
+//	fmt.Println("FAPI: ", fApi)
+//	rJson, _ := json.MarshalIndent(fApi, "", "  ")
+//	fmt.Println(string(rJson))
+//	return string(rJson)
+//}
+
+func FromApi(response *http.Response, target interface{}) error {
+	return json.NewDecoder(response.Body).Decode(target)
 }
 
 func ApiJson(payload interface{}) string {
@@ -61,7 +63,7 @@ func CastJsonToApiFormat(tApi interface{}) interface{} {
 	return apiJson
 }
 
-func Endpoint(resource map[string]string) string {
+func Endpoint(resource interface{}) string {
 	endpoint := strings.Replace(LastName(resource["name"]), "-log", "/log", 1000000)
 	endpoint = strings.Replace(LastName(resource["name"]), "-attempt", "/attempt", 1000000)
 	return endpoint

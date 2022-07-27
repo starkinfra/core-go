@@ -76,7 +76,7 @@ func GetId(sdkVersion string, host string, apiVersion string, user user.User, re
 		timeout,
 		query,
 	)
-	entity := api.FromApi(json)
+	entity := api.FromApi(json, resource)
 	return entity
 }
 

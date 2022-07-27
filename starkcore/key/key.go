@@ -1,15 +1,15 @@
 package key
 
 import (
-	"errors"
 	"github.com/starkbank/ecdsa-go/ellipticcurve/curve"
 	"github.com/starkbank/ecdsa-go/ellipticcurve/privatekey"
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 )
 
-func Create(path string) {
+func Create(path string) (string, string) {
 	//	Generate a new key pair
 	//	Generates a secp256k1 ECDSA private/public key pair to be used in the API authentications
 	//
@@ -23,28 +23,30 @@ func Create(path string) {
 	public := private.PublicKey()
 
 	privatePem := private.ToPem()
-	dataPrivate := []byte(privatePem)
 	publicPem := public.ToPem()
-	dataPublic := []byte(publicPem)
 
-	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
-		err := os.Mkdir(path, os.ModePerm)
-		if err != nil {
+	if path != "" {
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			erro := os.MkdirAll(path, os.ModePerm)
+			if erro != nil {
+				log.Println(erro)
+			}
+		}
+
+		_, err := os.Create(filepath.Join(path, "private-key.pem"))
+		_, err2 := os.Create(filepath.Join(path, "public-key.pem"))
+
+		if err != nil || err2 != nil {
 			log.Println(err)
 		}
 
-		_, e := os.Create("sample/private-key.pem")
-		errPrivate := ioutil.WriteFile("sample/private-key.pem", dataPrivate, 0)
+		errPrivate := ioutil.WriteFile(filepath.Join(path, "private-key.pem"), []byte(publicPem), 0666)
+		errPublic := ioutil.WriteFile(filepath.Join(path, "public-key.pem"), []byte(publicPem), 0666)
 
-		if e != nil || errPrivate != nil {
-			log.Println(e)
-		}
-
-		_, f := os.Create("sample/public-key.pem")
-		errPublic := ioutil.WriteFile("sample/public-key.pem", dataPublic, 0)
-
-		if f != nil || errPublic != nil {
-			log.Println(e)
+		if errPrivate != nil || errPublic != nil {
+			log.Println(err)
 		}
 	}
+
+	return privatePem, publicPem
 }

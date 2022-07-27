@@ -10,6 +10,11 @@ type Resource struct {
 	Subresource subresource.Subresource
 }
 
+type Resourcezao interface {
+	//GetNameResource() string
+	//GetClass() string
+}
+
 func (R Resource) Resource() string {
 	return fmt.Sprintf("%v[%v]", R.Subresource.Name, R.Id)
 }
