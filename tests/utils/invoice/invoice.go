@@ -66,6 +66,7 @@ func Create(invoices []Invoice) ([]Invoice, Error.StarkErrors) {
 		User.ExampleProjectBank,
 		ResourceInvoice,
 		invoices,
+		nil,
 	)
 	if err.Errors != nil {
 		return []Invoice{}, err
@@ -87,6 +88,7 @@ func CreateWithUser(invoices []Invoice, user user.User) ([]Invoice, Error.StarkE
 		user,
 		ResourceInvoice,
 		invoices,
+		nil,
 	)
 	if err.Errors != nil {
 		return []Invoice{}, err
@@ -133,6 +135,7 @@ func Update(id string) (Invoice, Error.StarkErrors) {
 		ResourceInvoice,
 		id,
 		invoicePatch,
+		nil,
 	)
 	if err.Errors != nil {
 		return Invoice{}, err

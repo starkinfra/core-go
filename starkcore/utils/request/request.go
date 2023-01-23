@@ -31,7 +31,7 @@ func Fetch(host string, sdkVersion string, user user.User, method string, path s
 	message := fmt.Sprintf("%v:%v:%v", user.GetAcessId(), accessTime, payload)
 	signature := ecdsa.Sign(message, user.GetPrivateKey()).ToBase64()
 	client := http.Client{Timeout: time.Duration(timeout) * time.Second}
-
+	
 	req, _ := http.NewRequest(method, url, strings.NewReader(payload.(string)))
 
 	req.Header.Add("Access-Id", user.GetAcessId())

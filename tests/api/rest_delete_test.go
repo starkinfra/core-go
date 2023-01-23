@@ -48,6 +48,7 @@ func TestSuccessDel(t *testing.T) {
 		User.ExampleProjectBank,
 		User.ResourceBoleto,
 		boletos[rand.Intn(params["limit"].(int))].Id,
+		nil,
 	)
 	if err.Errors != nil {
 		for _, e := range err.Errors {

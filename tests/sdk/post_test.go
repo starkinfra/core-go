@@ -3,6 +3,8 @@ package sdk
 import (
 	"fmt"
 	Boleto "github.com/starkinfra/core-go/tests/utils/boleto"
+	"github.com/starkinfra/core-go/tests/utils/issuing/card"
+	"github.com/starkinfra/core-go/tests/utils/issuing/holder"
 	Webhook "github.com/starkinfra/core-go/tests/utils/webhook"
 	"math/rand"
 	"testing"
@@ -77,4 +79,54 @@ func TestWebhookPostSingle(t *testing.T) {
 		}
 	}
 	fmt.Println("webhook's id: ", webhook.Id)
+}
+
+func TestIssuingHolderPost(t *testing.T) {
+
+	holderExample := []holder.IssuingHolder{
+		{
+			Name:       "Irene Thompson",
+			TaxId:      "52.792.530/0001-13",
+			ExternalId: fmt.Sprintf("%v%v", time.Now().Format("20060102150405.999999999Z07001504"), "308764"),
+		},
+	}
+
+	var expand = map[string]interface{}{}
+	expand["expand"] = "rules"
+
+	holders, err := holder.Create(holderExample, nil)
+	if err.Errors != nil {
+		for _, e := range err.Errors {
+			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+		}
+	}
+
+	for _, holder := range holders {
+		fmt.Printf("%+v", holder)
+	}
+}
+
+func TestIssuingCardPost(t *testing.T) {
+
+	cardExample := []card.IssuingCard{
+		{
+			HolderName:       "Irene Thompson",
+			HolderTaxId:      "52.792.530/0001-13",
+			HolderExternalId: "308764",
+		},
+	}
+
+	var expand = map[string]interface{}{}
+	expand["expand"] = "expiration, securityCode, number"
+
+	cards, err := card.Create(cardExample, expand)
+	if err.Errors != nil {
+		for _, e := range err.Errors {
+			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+		}
+	}
+
+	for _, card := range cards {
+		fmt.Printf("%+v\n", card)
+	}
 }

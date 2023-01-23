@@ -99,7 +99,7 @@ func GetStream(sdkVersion string, host string, apiVersion string, language strin
 	return jsonStr, starkErrors
 }
 
-func GetId(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, id string) ([]byte, Error.StarkErrors) {
+func GetId(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, id string, query map[string]interface{}) ([]byte, Error.StarkErrors) {
 	data := map[string]interface{}{}
 	get, err := request.Fetch(
 		host,
@@ -111,7 +111,7 @@ func GetId(sdkVersion string, host string, apiVersion string, language string, t
 		apiVersion,
 		language,
 		timeout,
-		nil,
+		query,
 	)
 	if err.Errors != nil {
 		return nil, err
@@ -177,7 +177,7 @@ func GetSubResource(sdkVersion string, host string, apiVersion string, language 
 	return jsonStr, err
 }
 
-func PostMulti(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, entity interface{}) ([]byte, Error.StarkErrors) {
+func PostMulti(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, entity interface{}, query map[string]interface{}) ([]byte, Error.StarkErrors) {
 	post, err := request.Fetch(
 		host,
 		sdkVersion,
@@ -188,7 +188,7 @@ func PostMulti(sdkVersion string, host string, apiVersion string, language strin
 		apiVersion,
 		language,
 		timeout,
-		nil,
+		query,
 	)
 	if err.Errors != nil {
 		return nil, err
@@ -197,7 +197,7 @@ func PostMulti(sdkVersion string, host string, apiVersion string, language strin
 	return api.FromApiJson(resp, resource), err
 }
 
-func PostSingle(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, entity interface{}) ([]byte, Error.StarkErrors) {
+func PostSingle(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, entity interface{}, query map[string]interface{}) ([]byte, Error.StarkErrors) {
 	data := map[string]interface{}{}
 	post, err := request.Fetch(
 		host,
@@ -209,7 +209,7 @@ func PostSingle(sdkVersion string, host string, apiVersion string, language stri
 		apiVersion,
 		language,
 		timeout,
-		nil,
+		query,
 	)
 	if err.Errors != nil {
 		return nil, err
@@ -252,7 +252,7 @@ func PostSubResource(sdkVersion string, host string, apiVersion string, user use
 	return jsonStr, err
 }
 
-func DeleteId(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, id string) ([]byte, Error.StarkErrors) {
+func DeleteId(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, id string, query map[string]interface{}) ([]byte, Error.StarkErrors) {
 	data := map[string]interface{}{}
 	cancel, err := request.Fetch(
 		host,
@@ -264,7 +264,7 @@ func DeleteId(sdkVersion string, host string, apiVersion string, language string
 		apiVersion,
 		language,
 		timeout,
-		nil,
+		query,
 	)
 	if err.Errors != nil {
 		return nil, err
@@ -278,7 +278,7 @@ func DeleteId(sdkVersion string, host string, apiVersion string, language string
 	return jsonStr, err
 }
 
-func PatchId(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, id string, payload interface{}) ([]byte, Error.StarkErrors) {
+func PatchId(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, id string, payload interface{}, query map[string]interface{}) ([]byte, Error.StarkErrors) {
 	data := map[string]interface{}{}
 	update, err := request.Fetch(
 		host,
@@ -290,7 +290,7 @@ func PatchId(sdkVersion string, host string, apiVersion string, language string,
 		apiVersion,
 		language,
 		timeout,
-		nil,
+		query,
 	)
 	if err.Errors != nil {
 		return nil, err

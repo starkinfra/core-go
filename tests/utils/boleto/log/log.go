@@ -53,6 +53,7 @@ func Get(id string) (Log, Error.StarkErrors) {
 		User.ExampleProjectBank,
 		resourceBoletoLog,
 		id,
+		nil,
 	)
 	if err.Errors != nil {
 		return Log{}, err

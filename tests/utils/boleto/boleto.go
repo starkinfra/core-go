@@ -52,6 +52,7 @@ func Create(boletos []Boleto) ([]Boleto, Error.StarkErrors) {
 		User.ExampleProjectBank,
 		resourceBoleto,
 		boletos,
+		nil,
 	)
 	if err.Errors != nil {
 		return []Boleto{}, err
@@ -73,6 +74,7 @@ func Get(id string) (Boleto, Error.StarkErrors) {
 		User.ExampleProjectBank,
 		resourceBoleto,
 		id,
+		nil,
 	)
 	if err.Errors != nil {
 		return Boleto{}, err
@@ -136,6 +138,7 @@ func Cancel(id string) (Boleto, Error.StarkErrors) {
 		User.ExampleProjectBank,
 		resourceBoleto,
 		id,
+		nil,
 	)
 	if err.Errors != nil {
 		return Boleto{}, err

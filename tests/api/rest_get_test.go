@@ -100,6 +100,7 @@ func TestSuccessGetId(t *testing.T) {
 		User.ExampleProjectBank,
 		User.ResourceBoleto,
 		boletos[rand.Intn(params["limit"].(int))].Id,
+		nil,
 	)
 	if err.Errors != nil {
 		for _, e := range err.Errors {
@@ -312,6 +313,7 @@ func TestSuccessGetLogId(t *testing.T) {
 		User.ExampleProjectBank,
 		User.ResourceBoletoLog,
 		logs[rand.Intn(params["limit"].(int))].Id,
+		nil,
 	)
 	if err.Errors != nil {
 		for _, e := range err.Errors {
@@ -335,6 +337,7 @@ func TestSuccessGetHolmesLogId(t *testing.T) {
 		User.ExampleProjectBank,
 		Log.ResourceHolmesLog,
 		"5682651440611328",
+		nil,
 	)
 	if err.Errors != nil {
 		for _, e := range err.Errors {

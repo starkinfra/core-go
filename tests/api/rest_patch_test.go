@@ -22,6 +22,7 @@ func TestSuccessPatch(t *testing.T) {
 		User.ResourceInvoice,
 		"4765711691939840",
 		patchData,
+		nil,
 	)
 	if err.Errors != nil {
 		for _, e := range err.Errors {

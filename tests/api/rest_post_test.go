@@ -51,6 +51,7 @@ func TestSuccessPostMulti(t *testing.T) {
 		User.ExampleProjectBank,
 		User.ResourceBoleto,
 		object,
+		nil,
 	)
 	if err.Errors != nil {
 		for _, e := range err.Errors {
