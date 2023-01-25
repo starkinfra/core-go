@@ -3,55 +3,78 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"math/rand"
-	"testing"
-	"time"
-
+	Error "github.com/starkinfra/core-go/starkcore/error"
 	"github.com/starkinfra/core-go/starkcore/utils/api"
 	"github.com/starkinfra/core-go/starkcore/utils/hosts"
 	"github.com/starkinfra/core-go/starkcore/utils/rest"
+	"github.com/starkinfra/core-go/tests/utils"
 	Boleto "github.com/starkinfra/core-go/tests/utils/boleto"
 	Log "github.com/starkinfra/core-go/tests/utils/boleto/log"
 	Invoice "github.com/starkinfra/core-go/tests/utils/invoice"
 	User "github.com/starkinfra/core-go/tests/utils/user"
+	"io/ioutil"
+	"math/rand"
+	"testing"
+	"time"
 )
 
 func TestSuccessGetStreamBank(t *testing.T) {
-	var boletos []Boleto.Boleto
-	data, err := rest.GetStream(
-		User.SdkVersion,
+	var boleto Boleto.Boleto
+	b := make(chan Boleto.Boleto)
+	c := make(chan map[string]interface{})
+	e := make(chan Error.StarkError)
+	f := make(chan Error.StarkError)
+
+	var params = map[string]interface{}{}
+	params["limit"] = rand.Intn(100)
+
+	go rest.GetStream(
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectBank,
-		User.ResourceBoleto,
-		nil,
+		utils.ResourceBoleto,
+		params,
+		c,
+		e,
 	)
-	if err.Errors != nil {
-		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+	if e != nil {
+		go func() {
+			for were := range e {
+				example := were
+				f <- example
+			}
+			close(f)
+		}()
+	}
+	go func() {
+		for were := range c {
+			wereByte, _ := json.Marshal(were)
+			err := json.Unmarshal(wereByte, &boleto)
+			if err != nil {
+				print(err)
+			}
+			b <- boleto
 		}
-	}
-	queryError := json.Unmarshal(data, &boletos)
-	if queryError != nil {
-		fmt.Println(queryError)
-	}
-	for _, boleto := range boletos {
-		fmt.Println(boleto.Id)
+		close(b)
+	}()
+
+	for entity := range b {
+		fmt.Println(entity.Id)
 	}
 }
 
 func TestSuccessGetPage(t *testing.T) {
 	payments, cursor, err := rest.GetPage(
-		User.SdkVersion,
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectBank,
-		User.ResourceUtilityPayment,
+		utils.ResourceUtilityPayment,
 		nil,
 	)
 	if err.Errors != nil {
@@ -65,41 +88,16 @@ func TestSuccessGetPage(t *testing.T) {
 
 func TestSuccessGetId(t *testing.T) {
 	var boleto Boleto.Boleto
-	var boletos []Boleto.Boleto
-
-	var params = map[string]interface{}{}
-	params["limit"] = rand.Intn(100)
-
-	query, err := rest.GetStream(
-		User.SdkVersion,
-		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
-		User.ExampleProjectBank,
-		User.ResourceBoleto,
-		params,
-	)
-	if err.Errors != nil {
-		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
-		}
-	}
-
-	queryError := json.Unmarshal(query, &boletos)
-	if queryError != nil {
-		fmt.Println(queryError)
-	}
 
 	get, err := rest.GetId(
-		User.SdkVersion,
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectBank,
-		User.ResourceBoleto,
-		boletos[rand.Intn(params["limit"].(int))].Id,
+		utils.ResourceBoleto,
+		"4537841761648640",
 		nil,
 	)
 	if err.Errors != nil {
@@ -115,41 +113,18 @@ func TestSuccessGetId(t *testing.T) {
 }
 
 func TestSuccessGetContent(t *testing.T) {
-
-	var invoices []Invoice.Invoice
-
 	var params = map[string]interface{}{}
 	params["limit"] = rand.Intn(100)
 
-	query, queryError := rest.GetStream(
-		User.SdkVersion,
-		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
-		User.ExampleProjectBank,
-		User.ResourceInvoice,
-		params,
-	)
-	if queryError.Errors != nil {
-		for _, e := range queryError.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
-		}
-	}
-	unmarshalError := json.Unmarshal(query, &invoices)
-	if unmarshalError != nil {
-		fmt.Println(unmarshalError)
-	}
-
 	request, requestError := rest.GetContent(
-		User.SdkVersion,
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectBank,
-		User.ResourceInvoice,
-		invoices[rand.Intn(params["limit"].(int))].Id,
+		utils.ResourceInvoice,
+		"6543381610102784",
 		"pdf",
 		nil,
 	)
@@ -158,20 +133,20 @@ func TestSuccessGetContent(t *testing.T) {
 			panic(fmt.Sprintf("code: %s, message: %s", erro.Code, erro.Message))
 		}
 	}
-	filename := fmt.Sprintf("%v%v.%v", api.Endpoint(User.ResourceInvoice), invoices[rand.Intn(params["limit"].(int))].Id, "pdf")
+	filename := fmt.Sprintf("%v%v.%v", api.Endpoint(utils.ResourceInvoice), "6543381610102784", "pdf")
 	err := ioutil.WriteFile(filename, request, 0666)
 	if err != nil {
-		fmt.Println("errrrrrrr", err)
+		fmt.Println(err)
 	}
 }
 
 func TestSuccessGetRaw(t *testing.T) {
 	pem, err := rest.GetRaw(
-		User.SdkVersion,
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		"public-key",
 		User.ExampleProjectBank,
 		nil,
@@ -184,84 +159,19 @@ func TestSuccessGetRaw(t *testing.T) {
 	fmt.Println(pem)
 }
 
-func TestSuccessGetStreamInfra(t *testing.T) {
-	var params = map[string]interface{}{}
-	params["limit"] = 3
-
-	data, err := rest.GetStream(
-		User.SdkVersion,
-		hosts.Infra,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
-		User.ExampleProjectInfra,
-		User.ResourcePixDomain,
-		params,
-	)
-	if err.Errors != nil {
-		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
-		}
-	}
-	fmt.Println(string(data))
-}
-
-func TestSuccessGetStreamInfraCardMethod(t *testing.T) {
-	data, err := rest.GetStream(
-		User.SdkVersion,
-		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
-		User.ExampleProjectInfra,
-		User.ResourceCardMethod,
-		nil,
-	)
-	if err.Errors != nil {
-		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
-		}
-	}
-	fmt.Println(string(data))
-}
-
 func TestSuccessGetSubResource(t *testing.T) {
-	var invoices []Invoice.Invoice
 	var payment Invoice.Payment
 
-	var params = map[string]interface{}{}
-	params["limit"] = rand.Intn(100)
-
-	query, queryError := rest.GetStream(
-		User.SdkVersion,
-		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
-		User.ExampleProjectBank,
-		User.ResourceInvoice,
-		params,
-	)
-	if queryError.Errors != nil {
-		for _, e := range queryError.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
-		}
-	}
-	unmarshalError := json.Unmarshal(query, &invoices)
-	if unmarshalError != nil {
-		fmt.Println(unmarshalError)
-	}
-
 	subResource, err := rest.GetSubResource(
-		User.SdkVersion,
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectBank,
-		User.ResourceInvoice,
-		invoices[rand.Intn(params["limit"].(int))].Id,
-		User.SubResourcePayment,
+		utils.ResourceInvoice,
+		"6543381610102784",
+		utils.SubResourcePayment,
 		nil,
 	)
 	if err.Errors != nil {
@@ -278,41 +188,17 @@ func TestSuccessGetSubResource(t *testing.T) {
 }
 
 func TestSuccessGetLogId(t *testing.T) {
-	var logs []Log.Log
 	var log Log.Log
 
-	var params = map[string]interface{}{}
-	params["limit"] = rand.Intn(100)
-
-	query, queryError := rest.GetStream(
-		User.SdkVersion,
-		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
-		User.ExampleProjectBank,
-		User.ResourceBoletoLog,
-		params,
-	)
-	if queryError.Errors != nil {
-		for _, e := range queryError.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
-		}
-	}
-	unmarshalError := json.Unmarshal(query, &logs)
-	if unmarshalError != nil {
-		fmt.Println(unmarshalError)
-	}
-
 	get, err := rest.GetId(
-		User.SdkVersion,
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectBank,
-		User.ResourceBoletoLog,
-		logs[rand.Intn(params["limit"].(int))].Id,
+		utils.ResourceBoletoLog,
+		"4919717689032704",
 		nil,
 	)
 	if err.Errors != nil {
@@ -329,13 +215,13 @@ func TestSuccessGetLogId(t *testing.T) {
 
 func TestSuccessGetHolmesLogId(t *testing.T) {
 	id, err := rest.GetId(
-		User.SdkVersion,
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectBank,
-		Log.ResourceHolmesLog,
+		utils.ResourceHolmesLog,
 		"5682651440611328",
 		nil,
 	)
@@ -366,39 +252,55 @@ func TestSuccessGetStreamBankHolmes(t *testing.T) {
 		Created *time.Time   `json:",omitempty"`
 	}
 
-	var logs []LogHolmes
+	var log LogHolmes
 
 	var params = map[string]interface{}{}
 	params["after"] = "2022-11-16"
 	params["limit"] = 203
 
-	get, err := rest.GetStream(
-		User.SdkVersion,
+	b := make(chan LogHolmes)
+	c := make(chan map[string]interface{})
+	e := make(chan Error.StarkError)
+	f := make(chan Error.StarkError)
+	go rest.GetStream(
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectBank,
-		Log.ResourceHolmesLog,
+		utils.ResourceHolmesLog,
 		params,
+		c,
+		e,
 	)
-	if err.Errors != nil {
-		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+	if e != nil {
+		go func() {
+			for were := range e {
+				example := were
+				f <- example
+			}
+			close(f)
+		}()
+	}
+	go func() {
+		for were := range c {
+			wereByte, _ := json.Marshal(were)
+			err := json.Unmarshal(wereByte, &log)
+			if err != nil {
+				print(err)
+			}
+			b <- log
 		}
-	}
-	unmarshalError := json.Unmarshal(get, &logs)
-	if unmarshalError != nil {
-		fmt.Println(unmarshalError)
-	}
-	for _, log := range logs {
-		fmt.Println(log.Id)
+		close(b)
+	}()
+
+	for entity := range b {
+		fmt.Println(entity.Id)
 	}
 }
 
 func TestBalanceStream(t *testing.T) {
-
-	var resourceBalance = map[string]string{"name": "Balance"}
 
 	type Balance struct {
 		Id       string `json:",omitempty"`
@@ -407,28 +309,50 @@ func TestBalanceStream(t *testing.T) {
 		Updated  *time.Time
 	}
 
-	var balances []Balance
+	var balance Balance
 
-	get, err := rest.GetStream(
-		User.SdkVersion,
+	b := make(chan Balance)
+	c := make(chan map[string]interface{})
+	e := make(chan Error.StarkError)
+	f := make(chan Error.StarkError)
+
+	var params = map[string]interface{}{}
+	params["limit"] = rand.Intn(100)
+
+	go rest.GetStream(
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectBank,
-		resourceBalance,
-		nil,
+		utils.ResourceBalance,
+		params,
+		c,
+		e,
 	)
-	if err.Errors != nil {
-		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+	if e != nil {
+		go func() {
+			for were := range e {
+				example := were
+				f <- example
+			}
+			close(f)
+		}()
+	}
+	go func() {
+		for were := range c {
+			wereByte, _ := json.Marshal(were)
+			err := json.Unmarshal(wereByte, &balance)
+			if err != nil {
+				print(err)
+			}
+			b <- balance
 		}
-	}
-	unmarshalError := json.Unmarshal(get, &balances)
-	if unmarshalError != nil {
-		fmt.Println(unmarshalError)
-	}
-	for _, balance := range balances {
-		fmt.Println(balance)
+		close(b)
+	}()
+
+	for entity := range b {
+		fmt.Println(entity.Id)
 	}
 }

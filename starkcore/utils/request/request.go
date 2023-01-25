@@ -1,11 +1,13 @@
 package request
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/starkbank/ecdsa-go/v2/ellipticcurve/ecdsa"
 	"github.com/starkinfra/core-go/starkcore/environment"
 	Error "github.com/starkinfra/core-go/starkcore/error"
 	"github.com/starkinfra/core-go/starkcore/user/user"
+	"github.com/starkinfra/core-go/starkcore/utils/api"
 	"github.com/starkinfra/core-go/starkcore/utils/checks"
 	urls "github.com/starkinfra/core-go/starkcore/utils/url"
 	"net/http"
@@ -16,7 +18,13 @@ import (
 
 func Fetch(host string, sdkVersion string, user user.User, method string, path string, payload interface{}, apiVersion string, language string, timeout int, query map[string]interface{}) (*http.Response, Error.StarkErrors) {
 	var url string
+	var body string
 	language = checks.CheckLanguage(language)
+
+	if payload != "" {
+		apiJson, _ := json.Marshal(api.CastJsonToApiFormat(payload))
+		body = string(apiJson)
+	}
 
 	switch user.GetEnvironment() {
 	case environment.Environments.Production:
@@ -28,11 +36,12 @@ func Fetch(host string, sdkVersion string, user user.User, method string, path s
 	url = fmt.Sprintf("%v/%v%v", url, path, urls.UrlEncode(query))
 	agent := fmt.Sprintf("Golang-SDK-%v-%v", host, sdkVersion)
 	accessTime := strconv.FormatInt(time.Now().Unix(), 10)
-	message := fmt.Sprintf("%v:%v:%v", user.GetAcessId(), accessTime, payload)
+	message := fmt.Sprintf("%v:%v:%v", user.GetAcessId(), accessTime, body)
 	signature := ecdsa.Sign(message, user.GetPrivateKey()).ToBase64()
 	client := http.Client{Timeout: time.Duration(timeout) * time.Second}
-	
-	req, _ := http.NewRequest(method, url, strings.NewReader(payload.(string)))
+
+
+	req, _ := http.NewRequest(method, url, strings.NewReader(body))
 
 	req.Header.Add("Access-Id", user.GetAcessId())
 	req.Header.Add("Access-Time", accessTime)

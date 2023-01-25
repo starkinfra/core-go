@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/starkinfra/core-go/starkcore/utils/hosts"
 	"github.com/starkinfra/core-go/starkcore/utils/rest"
+	"github.com/starkinfra/core-go/tests/utils"
 	Boleto "github.com/starkinfra/core-go/tests/utils/boleto"
 	User "github.com/starkinfra/core-go/tests/utils/user"
 	"math/rand"
@@ -43,13 +44,13 @@ func TestSuccessPostMulti(t *testing.T) {
 		},
 	}
 	create, err := rest.PostMulti(
-		User.SdkVersion,
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectBank,
-		User.ResourceBoleto,
+		utils.ResourceBoleto,
 		object,
 		nil,
 	)

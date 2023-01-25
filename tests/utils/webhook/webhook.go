@@ -6,6 +6,7 @@ import (
 	Error "github.com/starkinfra/core-go/starkcore/error"
 	"github.com/starkinfra/core-go/starkcore/utils/hosts"
 	"github.com/starkinfra/core-go/starkcore/utils/rest"
+	"github.com/starkinfra/core-go/tests/utils"
 	User "github.com/starkinfra/core-go/tests/utils/user"
 )
 
@@ -19,11 +20,11 @@ var resourceWebhook = map[string]string{"name": "Webhook"}
 
 func Create(webhook Webhook) (Webhook, Error.StarkErrors) {
 	create, err := rest.PostSingle(
-		User.SdkVersion,
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectBank,
 		resourceWebhook,
 		webhook,

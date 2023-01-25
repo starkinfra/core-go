@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/starkinfra/core-go/starkcore/utils/hosts"
 	"github.com/starkinfra/core-go/starkcore/utils/rest"
+	"github.com/starkinfra/core-go/tests/utils"
 	User "github.com/starkinfra/core-go/tests/utils/user"
 	"testing"
 )
@@ -13,13 +14,13 @@ func TestSuccessPatch(t *testing.T) {
 	patchData["amount"] = 10
 
 	invoice, err := rest.PatchId(
-		User.SdkVersion,
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectBank,
-		User.ResourceInvoice,
+		utils.ResourceInvoice,
 		"4765711691939840",
 		patchData,
 		nil,

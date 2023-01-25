@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func ApiJson(payload interface{}, resource map[string]string) string {
+func ApiJson(payload interface{}, resource map[string]string) map[string]interface{} {
 	b, _ := json.Marshal(payload)
 	unmarshalSliceError := json.Unmarshal(b, &payload)
 	if unmarshalSliceError != nil {
@@ -25,8 +25,7 @@ func ApiJson(payload interface{}, resource map[string]string) string {
 	if unmarshalError != nil {
 		fmt.Println(unmarshalError)
 	}
-	apiJson, _ := json.Marshal(CastJsonToApiFormat(tApi))
-	return string(apiJson)
+	return tApi
 }
 
 func CastJsonToApiFormat(tApi interface{}) interface{} {

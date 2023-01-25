@@ -12,8 +12,7 @@ func TestBoletoCancel(t *testing.T) {
 	params["limit"] = rand.Intn(100)
 	params["status"] = "registered"
 
-	boletos, err := Boleto.Query(params)
-	boleto, err := Boleto.Cancel(boletos[rand.Intn(params["limit"].(int))].Id)
+	boleto, err := Boleto.Cancel("4537841761648640")
 	if err.Errors != nil {
 		for _, e := range err.Errors {
 			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))

@@ -35,20 +35,18 @@ func GetPage(sdkVersion string, host string, apiVersion string, language string,
 		panic(unmarshalError)
 	}
 	cursor := data["cursor"]
-	jsonStr, _ := json.Marshal(data[api.LastNamePlural(resource)])
+	jsonBytes, _ := json.Marshal(data[api.LastNamePlural(resource)])
 	if cursor == nil {
-		return jsonStr, "", err
+		return jsonBytes, "", err
 	}
-	return jsonStr, cursor.(string), err
+	return jsonBytes, cursor.(string), err
 }
 
-func GetStream(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, query map[string]interface{}) ([]byte, Error.StarkErrors) {
-	var jsonStr []byte
-	starkErrors := Error.StarkErrors{}
-	var entities, response []map[string]interface{}
+func GetStream(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, query map[string]interface{}, c chan map[string]interface{}, e chan Error.StarkError) {
+	var response []map[string]interface{}
+	datas := make([]map[string]interface{}, len(response))
 	var isNilCursor, isValid bool
 	limitQuery := make(map[string]interface{})
-	c := make(chan map[string]interface{})
 	limit, _ := strconv.Atoi(fmt.Sprintf("%v", query["limit"]))
 	if limit == 0 {
 		isValid = true
@@ -62,7 +60,7 @@ func GetStream(sdkVersion string, host string, apiVersion string, language strin
 		if limit != 0 {
 			limitQuery["limit"] = int(math.Min(float64(limit), 100))
 		}
-		for _ = 0; (limit > 0 && isNilCursor == false) || isValid == true; {
+		for _ = 0; (limit > 0 && isNilCursor == false) || isValid == true && limitQuery["limit"] == nil; {
 			entities, cursor, err := GetPage(
 				sdkVersion,
 				host,
@@ -73,30 +71,25 @@ func GetStream(sdkVersion string, host string, apiVersion string, language strin
 				resource,
 				limitQuery,
 			)
-			isValid = false
-			unmarshalError := json.Unmarshal(entities, &response)
-			if unmarshalError != nil {
-				_ = fmt.Errorf("%v", unmarshalError)
+			if len(err.Errors) != 0 {
+				e <- err.Errors[0]
+				break
 			}
-			limitQuery["cursor"] = cursor
-			if cursor == "" {
-				isNilCursor = true
+			copy(datas, response)
+			json.Unmarshal(entities, &datas)
+			for _, data := range datas {
+				c <- data
 			}
 			if limit != 0 {
 				limit -= 100
 				limitQuery["limit"] = int(math.Min(float64(limit), 100))
 			}
-			for _, data := range response {
-				c <- data
+			limitQuery["cursor"] = cursor
+			if cursor == "" {
+				isNilCursor = true
 			}
-			starkErrors = err
 		}
 	}()
-	for entity := range c {
-		entities = append(entities, entity)
-	}
-	jsonStr, _ = json.Marshal(entities)
-	return jsonStr, starkErrors
 }
 
 func GetId(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, id string, query map[string]interface{}) ([]byte, Error.StarkErrors) {
@@ -121,8 +114,8 @@ func GetId(sdkVersion string, host string, apiVersion string, language string, t
 	if unmarshalError != nil {
 		fmt.Println(unmarshalError)
 	}
-	jsonStr, _ := json.Marshal(data[api.LastName(resource)])
-	return jsonStr, err
+	jsonBytes, _ := json.Marshal(data[api.LastName(resource)])
+	return jsonBytes, err
 }
 
 func GetContent(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, id string, subResourceName string, query map[string]interface{}) ([]byte, Error.StarkErrors) {
@@ -173,8 +166,8 @@ func GetSubResource(sdkVersion string, host string, apiVersion string, language 
 	if unmarshalError != nil {
 		fmt.Println(unmarshalError)
 	}
-	jsonStr, _ := json.Marshal(data[api.LastName(subResourceName)])
-	return jsonStr, err
+	jsonBytes, _ := json.Marshal(data[api.LastName(subResourceName)])
+	return jsonBytes, err
 }
 
 func PostMulti(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, entity interface{}, query map[string]interface{}) ([]byte, Error.StarkErrors) {
@@ -219,8 +212,8 @@ func PostSingle(sdkVersion string, host string, apiVersion string, language stri
 	if unmarshalError != nil {
 		return nil, Error.StarkErrors{}
 	}
-	jsonStr, _ := json.Marshal(data[api.LastName(resource)])
-	return jsonStr, err
+	jsonBytes, _ := json.Marshal(data[api.LastName(resource)])
+	return jsonBytes, err
 }
 
 func PostSubResource(sdkVersion string, host string, apiVersion string, user user.User, resource map[string]string, id string, subResource map[string]string, entity interface{}, language string, timeout int) ([]byte, Error.StarkErrors) {
@@ -248,8 +241,8 @@ func PostSubResource(sdkVersion string, host string, apiVersion string, user use
 	if unmarshalError != nil {
 		fmt.Println(unmarshalError)
 	}
-	jsonStr, _ := json.Marshal(data[api.LastName(resource)])
-	return jsonStr, err
+	jsonBytes, _ := json.Marshal(data[api.LastName(resource)])
+	return jsonBytes, err
 }
 
 func DeleteId(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, id string, query map[string]interface{}) ([]byte, Error.StarkErrors) {
@@ -274,8 +267,8 @@ func DeleteId(sdkVersion string, host string, apiVersion string, language string
 	if unmarshalError != nil {
 		fmt.Println(unmarshalError)
 	}
-	jsonStr, _ := json.Marshal(data[api.LastName(resource)])
-	return jsonStr, err
+	jsonBytes, _ := json.Marshal(data[api.LastName(resource)])
+	return jsonBytes, err
 }
 
 func PatchId(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, id string, payload interface{}, query map[string]interface{}) ([]byte, Error.StarkErrors) {
@@ -300,8 +293,8 @@ func PatchId(sdkVersion string, host string, apiVersion string, language string,
 	if unmarshalError != nil {
 		fmt.Println(unmarshalError)
 	}
-	jsonStr, _ := json.Marshal(data[api.LastName(resource)])
-	return jsonStr, err
+	jsonBytes, _ := json.Marshal(data[api.LastName(resource)])
+	return jsonBytes, err
 }
 
 func GetRaw(sdkVersion string, host string, apiVersion string, language string, timeout int, path string, user user.User, query map[string]interface{}) (map[string]interface{}, Error.StarkErrors) {

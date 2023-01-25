@@ -17,8 +17,7 @@ func TestBoletoGet(t *testing.T) {
 	var params = map[string]interface{}{}
 	params["limit"] = rand.Intn(100)
 
-	boletos, err := Boleto.Query(params)
-	boleto, err := Boleto.Get(boletos[rand.Intn(params["limit"].(int))].Id)
+	boleto, err := Boleto.Get("4537841761648640")
 	if err.Errors != nil {
 		for _, e := range err.Errors {
 			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
@@ -29,22 +28,22 @@ func TestBoletoGet(t *testing.T) {
 
 func TestBoletoQuery(t *testing.T) {
 	var params = map[string]interface{}{}
-	params["limit"] = 3
+	params["limit"] = 150
 
 	boletos, err := Boleto.Query(params)
-	if err.Errors != nil {
-		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
-		}
+	for boleto := range boletos {
+		fmt.Println("id:", boleto.Id)
 	}
-	for _, boleto := range boletos {
-		fmt.Println(boleto)
+	if err != nil {
+		for e := range err {
+			panic(fmt.Sprintf("code: %s, message:%s ", e.Code, e.Message))
+		}
 	}
 }
 
 func TestBoletoPage(t *testing.T) {
 	var params = map[string]interface{}{}
-	params["limit"] = 4
+	params["limit"] = 100
 
 	boletos, cursor, err := Boleto.Page(params)
 	if err.Errors != nil {
@@ -53,7 +52,7 @@ func TestBoletoPage(t *testing.T) {
 		}
 	}
 	for _, boleto := range boletos {
-		fmt.Println(boleto)
+		fmt.Println(boleto.Id)
 	}
 	fmt.Println(cursor)
 }
@@ -62,8 +61,7 @@ func TestBoletoLogGet(t *testing.T) {
 	var params = map[string]interface{}{}
 	params["limit"] = rand.Intn(100)
 
-	boletos, err := Log.Query(params)
-	boleto, err := Log.Get(boletos[rand.Intn(params["limit"].(int))].Id)
+	boleto, err := Log.Get("4537841761648640")
 	if err.Errors != nil {
 		for _, err := range err.Errors {
 			panic(err)
@@ -74,17 +72,17 @@ func TestBoletoLogGet(t *testing.T) {
 
 func TestBoletoLogQuery(t *testing.T) {
 	var params = map[string]interface{}{}
-	params["limit"] = 108
+	params["limit"] = 300
 	params["after"] = "2022-11-16"
 
-	boletos, err := Log.Query(nil)
-	if err.Errors != nil {
-		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+	boletos, err := Log.Query(params)
+	if err != nil {
+		for e := range err {
+			panic(fmt.Sprintf("code: %s, message:%s ", e.Code, e.Message))
 		}
 	}
-	for _, boleto := range boletos {
-		fmt.Println(boleto)
+	for boleto := range boletos {
+		fmt.Println("i, boleto", boleto.Id)
 	}
 }
 
@@ -109,8 +107,7 @@ func TestPaymentGet(t *testing.T) {
 	var params = map[string]interface{}{}
 	params["limit"] = rand.Intn(100)
 
-	invoices, err := Invoice.Query(params, User.ExampleProjectBank)
-	payment, err := Invoice.GetPayment(invoices[rand.Intn(params["limit"].(int))].Id)
+	payment, err := Invoice.GetPayment("6543381610102784")
 	if err.Errors != nil {
 		for _, e := range err.Errors {
 			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
@@ -123,8 +120,7 @@ func TestInvoiceGetPdf(t *testing.T) {
 	var params = map[string]interface{}{}
 	params["limit"] = rand.Intn(100)
 
-	invoices, err := Invoice.Query(params, User.ExampleProjectBank)
-	invoice, err := Invoice.Pdf(invoices[rand.Intn(params["limit"].(int))].Id)
+	invoice, err := Invoice.Pdf("6543381610102784")
 	if err.Errors != nil {
 		for _, e := range err.Errors {
 			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
@@ -144,20 +140,13 @@ func TestInvoiceGetQrcode(t *testing.T) {
 	var paramsQrcode = map[string]interface{}{}
 	paramsQrcode["size"] = 12
 
-	invoices, errQuery := Invoice.Query(params, User.ExampleProjectBank)
-	if errQuery.Errors != nil {
-		for _, e := range errQuery.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
-		}
-	}
-
-	invoice, err := Invoice.Qrcode(invoices[rand.Intn(params["limit"].(int))].Id, paramsQrcode)
+	invoice, err := Invoice.Qrcode("6543381610102784", paramsQrcode)
 	if err.Errors != nil {
 		for _, e := range err.Errors {
 			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
 		}
 	}
-	filename := fmt.Sprintf("%v%v.png", api.Endpoint(Invoice.ResourceInvoice), invoices[rand.Intn(params["limit"].(int))].Id)
+	filename := fmt.Sprintf("%v%v.png", api.Endpoint(Invoice.ResourceInvoice), "6543381610102784")
 	createFileError := ioutil.WriteFile(filename, invoice, 0666)
 	if createFileError != nil {
 		fmt.Println(createFileError)
@@ -169,12 +158,12 @@ func TestWorkspaceReplaceQuery(t *testing.T) {
 	params["limit"] = 1
 
 	invoices, err := Invoice.Query(params, User.ExampleOrganization.Replace("4690697751887872"))
-	if err.Errors != nil {
-		for _, e := range err.Errors {
+	if err != nil {
+		for e := range err {
 			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
 		}
 	}
-	for _, invoice := range invoices {
+	for invoice := range invoices {
 		fmt.Println("invoice's id: ", invoice.Id)
 	}
 }
@@ -182,15 +171,15 @@ func TestWorkspaceReplaceQuery(t *testing.T) {
 func TestEventQuery(t *testing.T) {
 	var params = map[string]interface{}{}
 	params["isDelivered"] = true
-	params["limit"] = 3
+	params["limit"] = 300
 
 	events, err := Event.Query(params)
-	if err.Errors != nil {
-		for _, e := range err.Errors {
+	if err != nil {
+		for e := range err {
 			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
 		}
 	}
-	for _, event := range events {
+	for event := range events {
 		fmt.Println(event)
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/starkinfra/core-go/starkcore/user/user"
 	"github.com/starkinfra/core-go/starkcore/utils/hosts"
 	"github.com/starkinfra/core-go/starkcore/utils/rest"
+	"github.com/starkinfra/core-go/tests/utils"
 	User "github.com/starkinfra/core-go/tests/utils/user"
 	"time"
 )
@@ -58,11 +59,11 @@ var subResourcePayment = map[string]string{"name": "Payment"}
 
 func Create(invoices []Invoice) ([]Invoice, Error.StarkErrors) {
 	create, err := rest.PostMulti(
-		User.SdkVersion,
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectBank,
 		ResourceInvoice,
 		invoices,
@@ -80,11 +81,11 @@ func Create(invoices []Invoice) ([]Invoice, Error.StarkErrors) {
 
 func CreateWithUser(invoices []Invoice, user user.User) ([]Invoice, Error.StarkErrors) {
 	create, err := rest.PostMulti(
-		User.SdkVersion,
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		user,
 		ResourceInvoice,
 		invoices,
@@ -100,25 +101,44 @@ func CreateWithUser(invoices []Invoice, user user.User) ([]Invoice, Error.StarkE
 	return invoices, err
 }
 
-func Query(params map[string]interface{}, user user.User) ([]Invoice, Error.StarkErrors) {
-	query, err := rest.GetStream(
-		User.SdkVersion,
+func Query(params map[string]interface{}, user user.User) (chan Invoice, chan Error.StarkError) {
+	b := make(chan Invoice)
+	c := make(chan map[string]interface{})
+	e := make(chan Error.StarkError)
+	f := make(chan Error.StarkError)
+	go rest.GetStream(
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		user,
 		ResourceInvoice,
 		params,
+		c,
+		e,
 	)
-	if err.Errors != nil {
-		return []Invoice{}, err
+	if e != nil {
+		go func() {
+			for were := range e {
+				example := were
+				f <- example
+			}
+			close(f)
+		}()
 	}
-	unmarshalError := json.Unmarshal(query, &invoices)
-	if unmarshalError != nil {
-		fmt.Println(unmarshalError)
-	}
-	return invoices, err
+	go func() {
+		for were := range c {
+			wereByte, _ := json.Marshal(were)
+			err := json.Unmarshal(wereByte, &invoice)
+			if err != nil {
+				print(err)
+			}
+			b <- invoice
+		}
+		close(e)
+	}()
+	return b, f
 }
 
 func Update(id string) (Invoice, Error.StarkErrors) {
@@ -126,11 +146,11 @@ func Update(id string) (Invoice, Error.StarkErrors) {
 	invoicePatch["amount"] = 1
 
 	updated, err := rest.PatchId(
-		User.SdkVersion,
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectBank,
 		ResourceInvoice,
 		id,
@@ -149,11 +169,11 @@ func Update(id string) (Invoice, Error.StarkErrors) {
 
 func Qrcode(id string, query map[string]interface{}) ([]byte, Error.StarkErrors) {
 	content, err := rest.GetContent(
-		User.SdkVersion,
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectBank,
 		ResourceInvoice,
 		id,
@@ -165,11 +185,11 @@ func Qrcode(id string, query map[string]interface{}) ([]byte, Error.StarkErrors)
 
 func Pdf(id string) ([]byte, Error.StarkErrors) {
 	content, err := rest.GetContent(
-		User.SdkVersion,
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectBank,
 		ResourceInvoice,
 		id,
@@ -181,11 +201,11 @@ func Pdf(id string) ([]byte, Error.StarkErrors) {
 
 func GetPayment(id string) (Payment, Error.StarkErrors) {
 	get, err := rest.GetSubResource(
-		User.SdkVersion,
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectBank,
 		ResourceInvoice,
 		id,

@@ -6,6 +6,7 @@ import (
 	Error "github.com/starkinfra/core-go/starkcore/error"
 	"github.com/starkinfra/core-go/starkcore/utils/hosts"
 	"github.com/starkinfra/core-go/starkcore/utils/rest"
+	"github.com/starkinfra/core-go/tests/utils"
 	"github.com/starkinfra/core-go/tests/utils/boleto"
 	User "github.com/starkinfra/core-go/tests/utils/user"
 	"time"
@@ -21,7 +22,6 @@ type Log struct {
 
 var log Log
 var logs []Log
-var resourceBoletoLog = map[string]string{"name": "BoletoLog"}
 
 type BoletoHolmes struct {
 	BoletoId string     `json:",omitempty"`
@@ -41,17 +41,15 @@ type HolmesLog struct {
 	Created *time.Time   `json:",omitempty"`
 }
 
-var ResourceHolmesLog = map[string]string{"name": "BoletoHolmesLog"}
-
 func Get(id string) (Log, Error.StarkErrors) {
 	get, err := rest.GetId(
-		User.SdkVersion,
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectBank,
-		resourceBoletoLog,
+		utils.ResourceBoletoLog,
 		id,
 		nil,
 	)
@@ -65,36 +63,55 @@ func Get(id string) (Log, Error.StarkErrors) {
 	return log, err
 }
 
-func Query(params map[string]interface{}) ([]Log, Error.StarkErrors) {
-	query, err := rest.GetStream(
-		User.SdkVersion,
+func Query(params map[string]interface{}) (chan Log, chan Error.StarkError) {
+	b := make(chan Log)
+	c := make(chan map[string]interface{})
+	e := make(chan Error.StarkError)
+	f := make(chan Error.StarkError)
+	go rest.GetStream(
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectBank,
-		resourceBoletoLog,
+		utils.ResourceBoletoLog,
 		params,
+		c,
+		e,
 	)
-	if err.Errors != nil {
-		return []Log{}, err
+	if e != nil {
+		go func() {
+			for were := range e {
+				example := were
+				f <- example
+			}
+			close(f)
+		}()
 	}
-	unmarshalError := json.Unmarshal(query, &logs)
-	if unmarshalError != nil {
-		fmt.Println(unmarshalError)
-	}
-	return logs, err
+	go func() {
+		for were := range c {
+			wereByte, _ := json.Marshal(were)
+			err := json.Unmarshal(wereByte, &log)
+			if err != nil {
+				print(err)
+			}
+			b <- log
+		}
+		close(b)
+	}()
+	return b, f
 }
 
 func Page(params map[string]interface{}) ([]Log, string, Error.StarkErrors) {
 	page, cursor, err := rest.GetPage(
-		User.SdkVersion,
+		utils.SdkVersion,
 		hosts.Bank,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectBank,
-		resourceBoletoLog,
+		utils.ResourceBoletoLog,
 		params,
 	)
 	if err.Errors != nil {

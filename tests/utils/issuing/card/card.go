@@ -5,6 +5,7 @@ import (
 	Error "github.com/starkinfra/core-go/starkcore/error"
 	"github.com/starkinfra/core-go/starkcore/utils/hosts"
 	"github.com/starkinfra/core-go/starkcore/utils/rest"
+	"github.com/starkinfra/core-go/tests/utils"
 	User "github.com/starkinfra/core-go/tests/utils/user"
 	"time"
 )
@@ -29,7 +30,7 @@ type IssuingCard struct {
 	Status           string        `json:",omitempty"`
 	Number           string        `json:",omitempty"`
 	SecurityCode     string        `json:",omitempty"`
-	Expiration       *time.Time    `json:",omitempty"`
+	Expiration       string        `json:",omitempty"`
 	Updated          *time.Time    `json:",omitempty"`
 	Created          *time.Time    `json:",omitempty"`
 }
@@ -74,11 +75,11 @@ var resourceIssuingCard = map[string]string{"name": "IssuingCard"}
 
 func Create(cards []IssuingCard, expand map[string]interface{}) ([]IssuingCard, Error.StarkErrors) {
 	create, err := rest.PostMulti(
-		User.SdkVersion,
+		utils.SdkVersion,
 		hosts.Infra,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectInfra,
 		resourceIssuingCard,
 		cards,

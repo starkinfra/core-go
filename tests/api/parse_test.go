@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/starkinfra/core-go/starkcore/utils/hosts"
 	"github.com/starkinfra/core-go/starkcore/utils/parse"
+	"github.com/starkinfra/core-go/tests/utils"
 	User "github.com/starkinfra/core-go/tests/utils/user"
 	"testing"
 )
@@ -14,10 +15,10 @@ func TestRightParseAndVerify(t *testing.T) {
 	parsed := parse.ParseAndVerify(
 		uuid,
 		validSignature,
-		User.SdkVersion,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.SdkVersion,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		hosts.Infra,
 		User.ExampleProjectBank,
 		"",
@@ -31,10 +32,10 @@ func TestWrongParseAndVerify(t *testing.T) {
 	parsed := parse.ParseAndVerify(
 		uuid,
 		invalidSignature,
-		User.SdkVersion,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.SdkVersion,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		hosts.Infra,
 		User.ExampleProjectBank,
 		"",
@@ -48,10 +49,10 @@ func TestRightVerify(t *testing.T) {
 	parsed := parse.ParseAndVerify(
 		uuid,
 		validSignature,
-		User.SdkVersion,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.SdkVersion,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		hosts.Infra,
 		User.ExampleProjectBank,
 		"",
@@ -65,10 +66,10 @@ func TestWrongVerify(t *testing.T) {
 	parsed := parse.ParseAndVerify(
 		uuid,
 		invalidSignature,
-		User.SdkVersion,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.SdkVersion,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		hosts.Infra,
 		User.ExampleProjectBank,
 		"",
@@ -82,10 +83,10 @@ func TestMalformed(t *testing.T) {
 	parsed := parse.ParseAndVerify(
 		content,
 		invalidSignature,
-		User.SdkVersion,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.SdkVersion,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		hosts.Infra,
 		User.ExampleProjectBank,
 		"",

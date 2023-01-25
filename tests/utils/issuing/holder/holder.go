@@ -5,6 +5,7 @@ import (
 	Error "github.com/starkinfra/core-go/starkcore/error"
 	"github.com/starkinfra/core-go/starkcore/utils/hosts"
 	"github.com/starkinfra/core-go/starkcore/utils/rest"
+	"github.com/starkinfra/core-go/tests/utils"
 	User "github.com/starkinfra/core-go/tests/utils/user"
 	"time"
 )
@@ -61,11 +62,11 @@ var resourceIssuingHolder = map[string]string{"name": "IssuingHolder"}
 
 func Create(holders []IssuingHolder, expand map[string]interface{}) ([]IssuingHolder, Error.StarkErrors) {
 	create, err := rest.PostMulti(
-		User.SdkVersion,
+		utils.SdkVersion,
 		hosts.Infra,
-		User.ApiVersion,
-		User.Language,
-		User.Timeout,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
 		User.ExampleProjectInfra,
 		resourceIssuingHolder,
 		holders,

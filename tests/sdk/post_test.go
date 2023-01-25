@@ -3,8 +3,10 @@ package sdk
 import (
 	"fmt"
 	Boleto "github.com/starkinfra/core-go/tests/utils/boleto"
+	Invoice "github.com/starkinfra/core-go/tests/utils/invoice"
 	"github.com/starkinfra/core-go/tests/utils/issuing/card"
 	"github.com/starkinfra/core-go/tests/utils/issuing/holder"
+	User "github.com/starkinfra/core-go/tests/utils/user"
 	Webhook "github.com/starkinfra/core-go/tests/utils/webhook"
 	"math/rand"
 	"testing"
@@ -41,30 +43,30 @@ func TestBoletoPostMulti(t *testing.T) {
 	}
 }
 
-//func TestInvoicePostMulti(t *testing.T) {
-//	invoiceToCreate := []Invoice.Invoice{
-//		{
-//			Amount: 111123,
-//			Name:   "Core-Go-Test-multi-1",
-//			TaxId:  "38.446.231/0001-04",
-//		}, {
-//			Amount: 222123,
-//			Name:   "Core-Go-Test-multi-1",
-//			TaxId:  "38.446.231/0001-04",
-//		},
-//	}
-//
-//	invoices, err := Invoice.CreateWithUser(invoiceToCreate, User.ExampleOrganization.Replace("4690697751887872"))
-//	if err.Errors != nil {
-//		for _, e := range err.Errors {
-//			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
-//		}
-//	}
-//	for _, invoice := range invoices {
-//		fmt.Println("invoice's id: ", invoice.Id)
-//		fmt.Println("invoice's amount: ", invoice.Amount)
-//	}
-//}
+func TestInvoicePostMulti(t *testing.T) {
+	invoiceToCreate := []Invoice.Invoice{
+		{
+			Amount: 111123,
+			Name:   "Core-Go-Test-multi-1",
+			TaxId:  "38.446.231/0001-04",
+		}, {
+			Amount: 222123,
+			Name:   "Core-Go-Test-multi-1",
+			TaxId:  "38.446.231/0001-04",
+		},
+	}
+
+	invoices, err := Invoice.CreateWithUser(invoiceToCreate, User.ExampleOrganization.Replace("4690697751887872"))
+	if err.Errors != nil {
+		for _, e := range err.Errors {
+			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+		}
+	}
+	for _, invoice := range invoices {
+		fmt.Println("invoice's id: ", invoice.Id)
+		fmt.Println("invoice's amount: ", invoice.Amount)
+	}
+}
 
 func TestWebhookPostSingle(t *testing.T) {
 	object := Webhook.Webhook{
@@ -117,7 +119,7 @@ func TestIssuingCardPost(t *testing.T) {
 	}
 
 	var expand = map[string]interface{}{}
-	expand["expand"] = "expiration, securityCode, number"
+	expand["expand"] = "securityCode, number, expiration"
 
 	cards, err := card.Create(cardExample, expand)
 	if err.Errors != nil {
