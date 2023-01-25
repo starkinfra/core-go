@@ -21,7 +21,7 @@ func TestSuccessPatch(t *testing.T) {
 		utils.Timeout,
 		User.ExampleProjectBank,
 		utils.ResourceInvoice,
-		"4765711691939840",
+		"6543381610102784",
 		patchData,
 		nil,
 	)

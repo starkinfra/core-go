@@ -30,14 +30,9 @@ func TestBoletoQuery(t *testing.T) {
 	var params = map[string]interface{}{}
 	params["limit"] = 150
 
-	boletos, err := Boleto.Query(params)
+	boletos := Boleto.Query(params)
 	for boleto := range boletos {
 		fmt.Println("id:", boleto.Id)
-	}
-	if err != nil {
-		for e := range err {
-			panic(fmt.Sprintf("code: %s, message:%s ", e.Code, e.Message))
-		}
 	}
 }
 
@@ -75,12 +70,8 @@ func TestBoletoLogQuery(t *testing.T) {
 	params["limit"] = 300
 	params["after"] = "2022-11-16"
 
-	boletos, err := Log.Query(params)
-	if err != nil {
-		for e := range err {
-			panic(fmt.Sprintf("code: %s, message:%s ", e.Code, e.Message))
-		}
-	}
+	boletos := Log.Query(params)
+
 	for boleto := range boletos {
 		fmt.Println("i, boleto", boleto.Id)
 	}
@@ -157,12 +148,7 @@ func TestWorkspaceReplaceQuery(t *testing.T) {
 	var params = map[string]interface{}{}
 	params["limit"] = 1
 
-	invoices, err := Invoice.Query(params, User.ExampleOrganization.Replace("4690697751887872"))
-	if err != nil {
-		for e := range err {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
-		}
-	}
+	invoices := Invoice.Query(params, User.ExampleOrganization.Replace("4690697751887872"))
 	for invoice := range invoices {
 		fmt.Println("invoice's id: ", invoice.Id)
 	}
@@ -173,13 +159,9 @@ func TestEventQuery(t *testing.T) {
 	params["isDelivered"] = true
 	params["limit"] = 300
 
-	events, err := Event.Query(params)
-	if err != nil {
-		for e := range err {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
-		}
-	}
+	events := Event.Query(params)
+
 	for event := range events {
-		fmt.Println(event)
+		fmt.Println(event.Id)
 	}
 }

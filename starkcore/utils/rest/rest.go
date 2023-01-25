@@ -42,7 +42,7 @@ func GetPage(sdkVersion string, host string, apiVersion string, language string,
 	return jsonBytes, cursor.(string), err
 }
 
-func GetStream(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, query map[string]interface{}, c chan map[string]interface{}, e chan Error.StarkError) {
+func GetStream(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, query map[string]interface{}, c chan map[string]interface{}) {
 	var response []map[string]interface{}
 	datas := make([]map[string]interface{}, len(response))
 	var isNilCursor, isValid bool
@@ -71,12 +71,16 @@ func GetStream(sdkVersion string, host string, apiVersion string, language strin
 				resource,
 				limitQuery,
 			)
-			if len(err.Errors) != 0 {
-				e <- err.Errors[0]
-				break
+			if err.Errors != nil {
+				for _, e := range err.Errors {
+					panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+				}
 			}
 			copy(datas, response)
-			json.Unmarshal(entities, &datas)
+			unmarshalErr := json.Unmarshal(entities, &datas)
+			if unmarshalErr != nil {
+				panic(unmarshalErr)
+			}
 			for _, data := range datas {
 				c <- data
 			}

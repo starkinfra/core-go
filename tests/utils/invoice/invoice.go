@@ -101,11 +101,9 @@ func CreateWithUser(invoices []Invoice, user user.User) ([]Invoice, Error.StarkE
 	return invoices, err
 }
 
-func Query(params map[string]interface{}, user user.User) (chan Invoice, chan Error.StarkError) {
+func Query(params map[string]interface{}, user user.User) chan Invoice {
 	b := make(chan Invoice)
 	c := make(chan map[string]interface{})
-	e := make(chan Error.StarkError)
-	f := make(chan Error.StarkError)
 	go rest.GetStream(
 		utils.SdkVersion,
 		hosts.Bank,
@@ -116,17 +114,7 @@ func Query(params map[string]interface{}, user user.User) (chan Invoice, chan Er
 		ResourceInvoice,
 		params,
 		c,
-		e,
 	)
-	if e != nil {
-		go func() {
-			for were := range e {
-				example := were
-				f <- example
-			}
-			close(f)
-		}()
-	}
 	go func() {
 		for were := range c {
 			wereByte, _ := json.Marshal(were)
@@ -136,9 +124,9 @@ func Query(params map[string]interface{}, user user.User) (chan Invoice, chan Er
 			}
 			b <- invoice
 		}
-		close(e)
+		close(b)
 	}()
-	return b, f
+	return b
 }
 
 func Update(id string) (Invoice, Error.StarkErrors) {

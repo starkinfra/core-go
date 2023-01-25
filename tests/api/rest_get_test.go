@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	Error "github.com/starkinfra/core-go/starkcore/error"
 	"github.com/starkinfra/core-go/starkcore/utils/api"
 	"github.com/starkinfra/core-go/starkcore/utils/hosts"
 	"github.com/starkinfra/core-go/starkcore/utils/rest"
@@ -22,9 +21,6 @@ func TestSuccessGetStreamBank(t *testing.T) {
 	var boleto Boleto.Boleto
 	b := make(chan Boleto.Boleto)
 	c := make(chan map[string]interface{})
-	e := make(chan Error.StarkError)
-	f := make(chan Error.StarkError)
-
 	var params = map[string]interface{}{}
 	params["limit"] = rand.Intn(100)
 
@@ -38,17 +34,7 @@ func TestSuccessGetStreamBank(t *testing.T) {
 		utils.ResourceBoleto,
 		params,
 		c,
-		e,
 	)
-	if e != nil {
-		go func() {
-			for were := range e {
-				example := were
-				f <- example
-			}
-			close(f)
-		}()
-	}
 	go func() {
 		for were := range c {
 			wereByte, _ := json.Marshal(were)
@@ -260,8 +246,6 @@ func TestSuccessGetStreamBankHolmes(t *testing.T) {
 
 	b := make(chan LogHolmes)
 	c := make(chan map[string]interface{})
-	e := make(chan Error.StarkError)
-	f := make(chan Error.StarkError)
 	go rest.GetStream(
 		utils.SdkVersion,
 		hosts.Bank,
@@ -272,17 +256,7 @@ func TestSuccessGetStreamBankHolmes(t *testing.T) {
 		utils.ResourceHolmesLog,
 		params,
 		c,
-		e,
 	)
-	if e != nil {
-		go func() {
-			for were := range e {
-				example := were
-				f <- example
-			}
-			close(f)
-		}()
-	}
 	go func() {
 		for were := range c {
 			wereByte, _ := json.Marshal(were)
@@ -313,8 +287,6 @@ func TestBalanceStream(t *testing.T) {
 
 	b := make(chan Balance)
 	c := make(chan map[string]interface{})
-	e := make(chan Error.StarkError)
-	f := make(chan Error.StarkError)
 
 	var params = map[string]interface{}{}
 	params["limit"] = rand.Intn(100)
@@ -329,17 +301,7 @@ func TestBalanceStream(t *testing.T) {
 		utils.ResourceBalance,
 		params,
 		c,
-		e,
 	)
-	if e != nil {
-		go func() {
-			for were := range e {
-				example := were
-				f <- example
-			}
-			close(f)
-		}()
-	}
 	go func() {
 		for were := range c {
 			wereByte, _ := json.Marshal(were)
