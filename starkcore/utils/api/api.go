@@ -28,11 +28,11 @@ func ApiJson(payload interface{}, resource map[string]string) interface{} {
 	return CastJsonToApiFormat(apiJson)
 }
 
-func CastJsonToApiFormat(tApi interface{}) interface{} {
+func CastJsonToApiFormat(json interface{}) interface{} {
 	apiJson := map[string]interface{}{}
-	mJson := reflect.ValueOf(tApi)
+	mJson := reflect.ValueOf(json)
 	if mJson.Kind() != reflect.Map {
-		return tApi
+		return json
 	}
 	if typedJson, ok := mJson.Interface().(map[string]interface{}); ok {
 		for key, value := range typedJson {
