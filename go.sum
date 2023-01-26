@@ -1,0 +1,4 @@
+github.com/iancoleman/strcase v0.2.0 h1:05I4QRnGpI0m37iZQRuskXh+w77mr6Z41lwQzuHLwW0=
+github.com/iancoleman/strcase v0.2.0/go.mod h1:iwCmte+B7n89clKwxIoIXy/HfoL7AsD47ZCWhYzw7ho=
+github.com/starkbank/ecdsa-go/v2 v2.0.0 h1:M8G8M+azTlslvMYHk71OiRrxpZHhM/fNLy+n2SEKT1E=
+github.com/starkbank/ecdsa-go/v2 v2.0.0/go.mod h1:NpEPAoZotqZ07mL2DnHm0ADSWZ3ujn6rSXN33oeAkj4=
