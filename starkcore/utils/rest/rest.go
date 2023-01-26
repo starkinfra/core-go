@@ -44,7 +44,7 @@ func GetPage(sdkVersion string, host string, apiVersion string, language string,
 
 func GetStream(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, query map[string]interface{}, c chan map[string]interface{}) {
 	var response []map[string]interface{}
-	datas := make([]map[string]interface{}, len(response))
+	newResponse := make([]map[string]interface{}, len(response))
 	var isNilCursor, isValid bool
 	limitQuery := make(map[string]interface{})
 	limit, _ := strconv.Atoi(fmt.Sprintf("%v", query["limit"]))
@@ -60,7 +60,7 @@ func GetStream(sdkVersion string, host string, apiVersion string, language strin
 		if limit != 0 {
 			limitQuery["limit"] = int(math.Min(float64(limit), 100))
 		}
-		for _ = 0; (limit > 0 && isNilCursor == false) || isValid == true && limitQuery["limit"] == nil; {
+		for _ = 0; (limit > 0 && !isNilCursor) || isValid && limitQuery["limit"] == nil; {
 			entities, cursor, err := GetPage(
 				sdkVersion,
 				host,
@@ -76,12 +76,12 @@ func GetStream(sdkVersion string, host string, apiVersion string, language strin
 					panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
 				}
 			}
-			copy(datas, response)
-			unmarshalErr := json.Unmarshal(entities, &datas)
+			copy(newResponse, response)
+			unmarshalErr := json.Unmarshal(entities, &newResponse)
 			if unmarshalErr != nil {
 				panic(unmarshalErr)
 			}
-			for _, data := range datas {
+			for _, data := range newResponse {
 				c <- data
 			}
 			if limit != 0 {
@@ -128,7 +128,8 @@ func GetContent(sdkVersion string, host string, apiVersion string, language stri
 		sdkVersion,
 		user,
 		"GET",
-		fmt.Sprintf("%v/%v/%v",
+		fmt.Sprintf(
+			"%v/%v/%v",
 			api.Endpoint(resource),
 			id,
 			subResourceName),
@@ -152,7 +153,8 @@ func GetSubResource(sdkVersion string, host string, apiVersion string, language 
 		sdkVersion,
 		user,
 		"GET",
-		fmt.Sprintf("%v/%v/%v",
+		fmt.Sprintf(
+			"%v/%v/%v",
 			api.Endpoint(resource),
 			id,
 			api.Endpoint(subResourceName)),

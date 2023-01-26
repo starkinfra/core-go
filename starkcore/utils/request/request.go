@@ -7,7 +7,6 @@ import (
 	"github.com/starkinfra/core-go/starkcore/environment"
 	Error "github.com/starkinfra/core-go/starkcore/error"
 	"github.com/starkinfra/core-go/starkcore/user/user"
-	"github.com/starkinfra/core-go/starkcore/utils/api"
 	"github.com/starkinfra/core-go/starkcore/utils/checks"
 	urls "github.com/starkinfra/core-go/starkcore/utils/url"
 	"net/http"
@@ -22,8 +21,8 @@ func Fetch(host string, sdkVersion string, user user.User, method string, path s
 	language = checks.CheckLanguage(language)
 
 	if payload != "" {
-		apiJson, _ := json.Marshal(api.CastJsonToApiFormat(payload))
-		body = string(apiJson)
+		bytes, _ := json.Marshal(payload)
+		body = string(bytes)
 	}
 
 	switch user.GetEnvironment() {
@@ -39,7 +38,6 @@ func Fetch(host string, sdkVersion string, user user.User, method string, path s
 	message := fmt.Sprintf("%v:%v:%v", user.GetAcessId(), accessTime, body)
 	signature := ecdsa.Sign(message, user.GetPrivateKey()).ToBase64()
 	client := http.Client{Timeout: time.Duration(timeout) * time.Second}
-
 
 	req, _ := http.NewRequest(method, url, strings.NewReader(body))
 
