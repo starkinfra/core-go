@@ -54,21 +54,21 @@ func Fetch(host string, sdkVersion string, user user.User, method string, path s
 	req.Header.Add("User-Agent", agent)
 	req.Header.Add("Accept-Language", language)
 
-	request, _ := client.Do(req)
+	rawResponse, _ := client.Do(req)
+	responseContent, _ := ioutil.ReadAll(rawResponse.Body)
+	response := Response{Status: rawResponse.StatusCode, Content: responseContent}
 
-	if request.StatusCode == 400 {
-		err := Error.InputError(request.Body)
+	if response.Status == 400 {
+		err := Error.InputError(string(response.Content))
 		return Response{}, err
 	}
-	if request.StatusCode == 500 {
+	if response.Status == 500 {
 		err := Error.InternalServerError()
 		return Response{}, err
 	}
-	if request.StatusCode != 200 {
-		err := Error.UnknownError(request.Body)
+	if response.Status != 200 {
+		err := Error.UnknownError(string(response.Content))
 		return Response{}, err
 	}
-	resp, _ := ioutil.ReadAll(request.Body)
-	response := Response{Status: request.StatusCode, Content: resp}
 	return response, Error.StarkErrors{}
 }

@@ -3,8 +3,6 @@ package error
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 )
 
 //	Error generated on interactions with the API
@@ -30,9 +28,11 @@ type StarkErrors struct {
 var starkError map[string][]StarkError
 var errs []StarkError
 
-func InputError(inputError io.ReadCloser) StarkErrors {
-	body, _ := ioutil.ReadAll(inputError)
-	json.Unmarshal(body, &starkError)
+func InputError(message string) StarkErrors {
+	err := json.Unmarshal([]byte(message), &starkError)
+	if err != nil {
+		panic(err)
+	}
 	for _, errors := range starkError["errors"] {
 		errs = append(errs, StarkError{
 			Code:    errors.Code,
@@ -52,12 +52,11 @@ func InternalServerError() StarkErrors {
 	return err
 }
 
-func UnknownError(unknown io.ReadCloser) StarkErrors {
-	body, _ := ioutil.ReadAll(unknown)
+func UnknownError(message string) StarkErrors {
 	err := StarkErrors{
 		Errors: []StarkError{{
 			Code:    "unknownError",
-			Message: fmt.Sprintf("Unknown exception encountered: %v", string(body)),
+			Message: fmt.Sprintf("Unknown exception encountered: %v", message),
 		}},
 	}
 	return err
