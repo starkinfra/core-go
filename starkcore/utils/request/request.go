@@ -33,7 +33,7 @@ func Fetch(host string, sdkVersion string, user user.User, method string, path s
 	}
 
 	url = fmt.Sprintf("%v/%v%v", url, path, urls.UrlEncode(query))
-	agent := fmt.Sprintf("Golang-SDK-%v-%v", host, sdkVersion)
+	agent := fmt.Sprintf("Go-SDK-%v-%v", host, sdkVersion)
 	accessTime := strconv.FormatInt(time.Now().Unix(), 10)
 	message := fmt.Sprintf("%v:%v:%v", user.GetAcessId(), accessTime, body)
 	signature := ecdsa.Sign(message, user.GetPrivateKey()).ToBase64()

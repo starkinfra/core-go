@@ -45,11 +45,10 @@ func GetPage(sdkVersion string, host string, apiVersion string, language string,
 func GetStream(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, query map[string]interface{}, c chan map[string]interface{}) {
 	var response []map[string]interface{}
 	newResponse := make([]map[string]interface{}, len(response))
-	var isNilCursor, isValid bool
+	var isNilCursor bool
 	limitQuery := make(map[string]interface{})
 	limit, _ := strconv.Atoi(fmt.Sprintf("%v", query["limit"]))
 	if limit == 0 {
-		isValid = true
 		limitQuery["limit"] = nil
 	}
 	for k, v := range query {
@@ -60,7 +59,7 @@ func GetStream(sdkVersion string, host string, apiVersion string, language strin
 		if limit != 0 {
 			limitQuery["limit"] = int(math.Min(float64(limit), 100))
 		}
-		for _ = 0; (limit > 0 && !isNilCursor) || isValid && limitQuery["limit"] == nil; {
+		for _ = 0; (limit > 0 && !isNilCursor) || limitQuery["limit"] == nil; {
 			entities, cursor, err := GetPage(
 				sdkVersion,
 				host,

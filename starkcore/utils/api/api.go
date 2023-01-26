@@ -10,8 +10,8 @@ import (
 )
 
 func ApiJson(payload interface{}, resource map[string]string) interface{} {
-	b, _ := json.Marshal(payload)
-	unmarshalSliceError := json.Unmarshal(b, &payload)
+	bytes, _ := json.Marshal(payload)
+	unmarshalSliceError := json.Unmarshal(bytes, &payload)
 	if unmarshalSliceError != nil {
 		fmt.Println(unmarshalSliceError)
 	}
@@ -20,12 +20,12 @@ func ApiJson(payload interface{}, resource map[string]string) interface{} {
 		data[LastNamePlural(resource)] = payload
 		return ApiJson(data, resource)
 	}
-	tApi := map[string]interface{}{}
-	unmarshalError := json.Unmarshal(b, &tApi)
+	apiJson := map[string]interface{}{}
+	unmarshalError := json.Unmarshal(bytes, &apiJson)
 	if unmarshalError != nil {
 		fmt.Println(unmarshalError)
 	}
-	return CastJsonToApiFormat(tApi)
+	return CastJsonToApiFormat(apiJson)
 }
 
 func CastJsonToApiFormat(tApi interface{}) interface{} {
