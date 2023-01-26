@@ -89,8 +89,7 @@ func Get(id string) (Boleto, Error.StarkErrors) {
 
 func Query(params map[string]interface{}) chan Boleto {
 	b := make(chan Boleto)
-	c := make(chan map[string]interface{})
-	go rest.GetStream(
+	c := rest.GetStream(
 		utils.SdkVersion,
 		hosts.Bank,
 		utils.ApiVersion,
@@ -99,7 +98,6 @@ func Query(params map[string]interface{}) chan Boleto {
 		User.ExampleProjectBank,
 		resourceBoleto,
 		params,
-		c,
 	)
 	go func() {
 		for were := range c {

@@ -69,7 +69,6 @@ type CardMethod struct {
 	Number string `json:",omitempty"`
 }
 
-var object IssuingCard
 var objects []IssuingCard
 var resourceIssuingCard = map[string]string{"name": "IssuingCard"}
 

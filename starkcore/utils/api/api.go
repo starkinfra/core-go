@@ -65,9 +65,9 @@ func CastJsonToApiFormat(tApi interface{}) interface{} {
 	return apiJson
 }
 
-func FromApiJson(response interface{}, resource map[string]string) []byte {
+func FromApiJson(response []byte, resource map[string]string) []byte {
 	data := map[string]interface{}{}
-	unmarshalError := json.Unmarshal(response.([]byte), &data)
+	unmarshalError := json.Unmarshal(response, &data)
 	if unmarshalError != nil {
 		fmt.Println(unmarshalError)
 	}

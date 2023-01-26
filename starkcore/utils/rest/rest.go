@@ -7,14 +7,13 @@ import (
 	"github.com/starkinfra/core-go/starkcore/user/user"
 	"github.com/starkinfra/core-go/starkcore/utils/api"
 	"github.com/starkinfra/core-go/starkcore/utils/request"
-	"io/ioutil"
 	"math"
 	"strconv"
 )
 
 func GetPage(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, query map[string]interface{}) ([]byte, string, Error.StarkErrors) {
 	data := map[string]interface{}{}
-	page, err := request.Fetch(
+	response, err := request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -29,8 +28,7 @@ func GetPage(sdkVersion string, host string, apiVersion string, language string,
 	if err.Errors != nil {
 		return nil, "", err
 	}
-	resp, _ := ioutil.ReadAll(page.Body)
-	unmarshalError := json.Unmarshal(resp, &data)
+	unmarshalError := json.Unmarshal(response.Content, &data)
 	if unmarshalError != nil {
 		panic(unmarshalError)
 	}
@@ -42,24 +40,27 @@ func GetPage(sdkVersion string, host string, apiVersion string, language string,
 	return jsonBytes, cursor.(string), err
 }
 
-func GetStream(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, query map[string]interface{}, c chan map[string]interface{}) {
+func GetStream(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, query map[string]interface{}) chan map[string]interface{} {
+	channel := make(chan map[string]interface{})
+	isNilCursor := false
 	var response []map[string]interface{}
 	newResponse := make([]map[string]interface{}, len(response))
-	var isNilCursor bool
+
 	limitQuery := make(map[string]interface{})
+	for k, v := range query {
+		limitQuery[k] = v
+	}
 	limit, _ := strconv.Atoi(fmt.Sprintf("%v", query["limit"]))
 	if limit == 0 {
 		limitQuery["limit"] = nil
 	}
-	for k, v := range query {
-		limitQuery[k] = v
+	if limit != 0 {
+		limitQuery["limit"] = int(math.Min(float64(limit), 100))
 	}
+
 	go func() {
-		defer close(c)
-		if limit != 0 {
-			limitQuery["limit"] = int(math.Min(float64(limit), 100))
-		}
-		for _ = 0; (limit > 0 && !isNilCursor) || limitQuery["limit"] == nil; {
+		defer close(channel)
+		for _ = 0; (limitQuery["limit"] == nil || limit > 0) && !isNilCursor; {
 			entities, cursor, err := GetPage(
 				sdkVersion,
 				host,
@@ -81,7 +82,7 @@ func GetStream(sdkVersion string, host string, apiVersion string, language strin
 				panic(unmarshalErr)
 			}
 			for _, data := range newResponse {
-				c <- data
+				channel <- data
 			}
 			if limit != 0 {
 				limit -= 100
@@ -93,11 +94,12 @@ func GetStream(sdkVersion string, host string, apiVersion string, language strin
 			}
 		}
 	}()
+	return channel
 }
 
 func GetId(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, id string, query map[string]interface{}) ([]byte, Error.StarkErrors) {
 	data := map[string]interface{}{}
-	get, err := request.Fetch(
+	response, err := request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -112,17 +114,16 @@ func GetId(sdkVersion string, host string, apiVersion string, language string, t
 	if err.Errors != nil {
 		return nil, err
 	}
-	resp, _ := ioutil.ReadAll(get.Body)
-	unmarshalError := json.Unmarshal(resp, &data)
+	unmarshalError := json.Unmarshal(response.Content, &data)
 	if unmarshalError != nil {
-		fmt.Println(unmarshalError)
+		panic(unmarshalError)
 	}
 	jsonBytes, _ := json.Marshal(data[api.LastName(resource)])
 	return jsonBytes, err
 }
 
 func GetContent(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, id string, subResourceName string, query map[string]interface{}) ([]byte, Error.StarkErrors) {
-	get, err := request.Fetch(
+	response, err := request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -131,7 +132,8 @@ func GetContent(sdkVersion string, host string, apiVersion string, language stri
 			"%v/%v/%v",
 			api.Endpoint(resource),
 			id,
-			subResourceName),
+			subResourceName,
+		),
 		"",
 		apiVersion,
 		language,
@@ -141,13 +143,13 @@ func GetContent(sdkVersion string, host string, apiVersion string, language stri
 	if err.Errors != nil {
 		return nil, err
 	}
-	content, _ := ioutil.ReadAll(get.Body)
+	content, _ := json.Marshal(response.Content)
 	return content, err
 }
 
 func GetSubResource(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, id string, subResourceName map[string]string, query map[string]interface{}) ([]byte, Error.StarkErrors) {
 	data := map[string]interface{}{}
-	get, err := request.Fetch(
+	response, err := request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -156,7 +158,8 @@ func GetSubResource(sdkVersion string, host string, apiVersion string, language 
 			"%v/%v/%v",
 			api.Endpoint(resource),
 			id,
-			api.Endpoint(subResourceName)),
+			api.Endpoint(subResourceName),
+		),
 		"",
 		apiVersion,
 		language,
@@ -166,17 +169,16 @@ func GetSubResource(sdkVersion string, host string, apiVersion string, language 
 	if err.Errors != nil {
 		return nil, err
 	}
-	resp, _ := ioutil.ReadAll(get.Body)
-	unmarshalError := json.Unmarshal(resp, &data)
+	unmarshalError := json.Unmarshal(response.Content, &data)
 	if unmarshalError != nil {
-		fmt.Println(unmarshalError)
+		panic(unmarshalError)
 	}
 	jsonBytes, _ := json.Marshal(data[api.LastName(subResourceName)])
 	return jsonBytes, err
 }
 
 func PostMulti(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, entity interface{}, query map[string]interface{}) ([]byte, Error.StarkErrors) {
-	post, err := request.Fetch(
+	response, err := request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -191,13 +193,12 @@ func PostMulti(sdkVersion string, host string, apiVersion string, language strin
 	if err.Errors != nil {
 		return nil, err
 	}
-	resp, _ := ioutil.ReadAll(post.Body)
-	return api.FromApiJson(resp, resource), err
+	return api.FromApiJson(response.Content, resource), err
 }
 
 func PostSingle(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, entity interface{}, query map[string]interface{}) ([]byte, Error.StarkErrors) {
 	data := map[string]interface{}{}
-	post, err := request.Fetch(
+	response, err := request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -212,10 +213,9 @@ func PostSingle(sdkVersion string, host string, apiVersion string, language stri
 	if err.Errors != nil {
 		return nil, err
 	}
-	resp, _ := ioutil.ReadAll(post.Body)
-	unmarshalError := json.Unmarshal(resp, &data)
+	unmarshalError := json.Unmarshal(response.Content, &data)
 	if unmarshalError != nil {
-		return nil, Error.StarkErrors{}
+		panic(unmarshalError)
 	}
 	jsonBytes, _ := json.Marshal(data[api.LastName(resource)])
 	return jsonBytes, err
@@ -223,7 +223,7 @@ func PostSingle(sdkVersion string, host string, apiVersion string, language stri
 
 func PostSubResource(sdkVersion string, host string, apiVersion string, user user.User, resource map[string]string, id string, subResource map[string]string, entity interface{}, language string, timeout int) ([]byte, Error.StarkErrors) {
 	data := map[string]interface{}{}
-	post, err := request.Fetch(
+	response, err := request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -231,7 +231,8 @@ func PostSubResource(sdkVersion string, host string, apiVersion string, user use
 		fmt.Sprintf("%v/%v/%v",
 			api.Endpoint(resource),
 			id,
-			subResource),
+			subResource,
+		),
 		api.ApiJson(entity, resource),
 		apiVersion,
 		language,
@@ -241,10 +242,9 @@ func PostSubResource(sdkVersion string, host string, apiVersion string, user use
 	if err.Errors != nil {
 		return nil, err
 	}
-	resp, _ := ioutil.ReadAll(post.Body)
-	unmarshalError := json.Unmarshal(resp, &data)
+	unmarshalError := json.Unmarshal(response.Content, &data)
 	if unmarshalError != nil {
-		fmt.Println(unmarshalError)
+		panic(unmarshalError)
 	}
 	jsonBytes, _ := json.Marshal(data[api.LastName(resource)])
 	return jsonBytes, err
@@ -252,7 +252,7 @@ func PostSubResource(sdkVersion string, host string, apiVersion string, user use
 
 func DeleteId(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, id string, query map[string]interface{}) ([]byte, Error.StarkErrors) {
 	data := map[string]interface{}{}
-	cancel, err := request.Fetch(
+	response, err := request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -267,18 +267,17 @@ func DeleteId(sdkVersion string, host string, apiVersion string, language string
 	if err.Errors != nil {
 		return nil, err
 	}
-	resp, _ := ioutil.ReadAll(cancel.Body)
-	unmarshalError := json.Unmarshal(resp, &data)
+	unmarshalError := json.Unmarshal(response.Content, &data)
 	if unmarshalError != nil {
-		fmt.Println(unmarshalError)
+		panic(unmarshalError)
 	}
-	jsonBytes, _ := json.Marshal(data[api.LastName(resource)])
-	return jsonBytes, err
+	resp, _ := json.Marshal(data[api.LastName(resource)])
+	return resp, err
 }
 
 func PatchId(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, id string, payload interface{}, query map[string]interface{}) ([]byte, Error.StarkErrors) {
 	data := map[string]interface{}{}
-	update, err := request.Fetch(
+	response, err := request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -293,10 +292,9 @@ func PatchId(sdkVersion string, host string, apiVersion string, language string,
 	if err.Errors != nil {
 		return nil, err
 	}
-	resp, _ := ioutil.ReadAll(update.Body)
-	unmarshalError := json.Unmarshal(resp, &data)
+	unmarshalError := json.Unmarshal(response.Content, &data)
 	if unmarshalError != nil {
-		fmt.Println(unmarshalError)
+		panic(unmarshalError)
 	}
 	jsonBytes, _ := json.Marshal(data[api.LastName(resource)])
 	return jsonBytes, err
@@ -304,7 +302,7 @@ func PatchId(sdkVersion string, host string, apiVersion string, language string,
 
 func GetRaw(sdkVersion string, host string, apiVersion string, language string, timeout int, path string, user user.User, query map[string]interface{}) (map[string]interface{}, Error.StarkErrors) {
 	data := map[string]interface{}{}
-	raw, err := request.Fetch(
+	response, err := request.Fetch(
 		host,
 		sdkVersion,
 		user,
@@ -319,10 +317,9 @@ func GetRaw(sdkVersion string, host string, apiVersion string, language string, 
 	if err.Errors != nil {
 		return nil, err
 	}
-	resp, _ := ioutil.ReadAll(raw.Body)
-	unmarshalError := json.Unmarshal(resp, &data)
+	unmarshalError := json.Unmarshal(response.Content, &data)
 	if unmarshalError != nil {
-		return nil, err
+		panic(unmarshalError)
 	}
 	return data, err
 }

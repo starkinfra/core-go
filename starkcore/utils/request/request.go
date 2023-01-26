@@ -9,13 +9,19 @@ import (
 	"github.com/starkinfra/core-go/starkcore/user/user"
 	"github.com/starkinfra/core-go/starkcore/utils/checks"
 	urls "github.com/starkinfra/core-go/starkcore/utils/url"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 )
 
-func Fetch(host string, sdkVersion string, user user.User, method string, path string, payload interface{}, apiVersion string, language string, timeout int, query map[string]interface{}) (*http.Response, Error.StarkErrors) {
+type Response struct {
+	Status  int
+	Content []byte
+}
+
+func Fetch(host string, sdkVersion string, user user.User, method string, path string, payload interface{}, apiVersion string, language string, timeout int, query map[string]interface{}) (Response, Error.StarkErrors) {
 	var url string
 	var body string
 	language = checks.CheckLanguage(language)
@@ -48,19 +54,21 @@ func Fetch(host string, sdkVersion string, user user.User, method string, path s
 	req.Header.Add("User-Agent", agent)
 	req.Header.Add("Accept-Language", language)
 
-	response, _ := client.Do(req)
+	request, _ := client.Do(req)
 
-	if response.StatusCode == 400 {
-		err := Error.InputError(response.Body)
-		return nil, err
+	if request.StatusCode == 400 {
+		err := Error.InputError(request.Body)
+		return Response{}, err
 	}
-	if response.StatusCode == 500 {
+	if request.StatusCode == 500 {
 		err := Error.InternalServerError()
-		return nil, err
+		return Response{}, err
 	}
-	if response.StatusCode != 200 {
-		err := Error.UnknownError(response.Body)
-		return nil, err
+	if request.StatusCode != 200 {
+		err := Error.UnknownError(request.Body)
+		return Response{}, err
 	}
+	resp, _ := ioutil.ReadAll(request.Body)
+	response := Response{Status: request.StatusCode, Content: resp}
 	return response, Error.StarkErrors{}
 }

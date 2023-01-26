@@ -103,8 +103,7 @@ func CreateWithUser(invoices []Invoice, user user.User) ([]Invoice, Error.StarkE
 
 func Query(params map[string]interface{}, user user.User) chan Invoice {
 	b := make(chan Invoice)
-	c := make(chan map[string]interface{})
-	go rest.GetStream(
+	c := rest.GetStream(
 		utils.SdkVersion,
 		hosts.Bank,
 		utils.ApiVersion,
@@ -113,7 +112,6 @@ func Query(params map[string]interface{}, user user.User) chan Invoice {
 		user,
 		ResourceInvoice,
 		params,
-		c,
 	)
 	go func() {
 		for were := range c {

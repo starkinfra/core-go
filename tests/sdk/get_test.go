@@ -7,6 +7,7 @@ import (
 	Log "github.com/starkinfra/core-go/tests/utils/boleto/log"
 	Event "github.com/starkinfra/core-go/tests/utils/event"
 	Invoice "github.com/starkinfra/core-go/tests/utils/invoice"
+	"github.com/starkinfra/core-go/tests/utils/issuing/product"
 	User "github.com/starkinfra/core-go/tests/utils/user"
 	"io/ioutil"
 	"math/rand"
@@ -28,7 +29,7 @@ func TestBoletoGet(t *testing.T) {
 
 func TestBoletoQuery(t *testing.T) {
 	var params = map[string]interface{}{}
-	params["limit"] = 150
+	params["limit"] = 200
 
 	boletos := Boleto.Query(params)
 	for boleto := range boletos {
@@ -70,10 +71,19 @@ func TestBoletoLogQuery(t *testing.T) {
 	params["limit"] = 300
 	params["after"] = "2022-11-16"
 
-	boletos := Log.Query(params)
+	boletos := Log.Query(nil)
 
 	for boleto := range boletos {
 		fmt.Println("i, boleto", boleto.Id)
+	}
+}
+
+func TestProductLogQuery(t *testing.T) {
+
+	products := product.Query(nil)
+
+	for product := range products {
+		fmt.Println("i: product", product.Id)
 	}
 }
 

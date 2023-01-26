@@ -26,7 +26,7 @@ func TestSuccessDel(t *testing.T) {
 		utils.Timeout,
 		User.ExampleProjectBank,
 		utils.ResourceBoleto,
-		"4537841761648640",
+		"6678130383126528",
 		nil,
 	)
 	if err.Errors != nil {
@@ -38,5 +38,7 @@ func TestSuccessDel(t *testing.T) {
 	if unmarshalError != nil {
 		fmt.Println(unmarshalError)
 	}
-	fmt.Println(boleto.Id)
+
+	fmt.Println("id: ", boleto.Id)
+
 }

@@ -20,11 +20,10 @@ import (
 func TestSuccessGetStreamBank(t *testing.T) {
 	var boleto Boleto.Boleto
 	b := make(chan Boleto.Boleto)
-	c := make(chan map[string]interface{})
 	var params = map[string]interface{}{}
-	params["limit"] = rand.Intn(100)
+	params["limit"] = 300
 
-	go rest.GetStream(
+	c := rest.GetStream(
 		utils.SdkVersion,
 		hosts.Bank,
 		utils.ApiVersion,
@@ -33,7 +32,6 @@ func TestSuccessGetStreamBank(t *testing.T) {
 		User.ExampleProjectBank,
 		utils.ResourceBoleto,
 		params,
-		c,
 	)
 	go func() {
 		for were := range c {
@@ -245,8 +243,7 @@ func TestSuccessGetStreamBankHolmes(t *testing.T) {
 	params["limit"] = 203
 
 	b := make(chan LogHolmes)
-	c := make(chan map[string]interface{})
-	go rest.GetStream(
+	c := rest.GetStream(
 		utils.SdkVersion,
 		hosts.Bank,
 		utils.ApiVersion,
@@ -255,7 +252,6 @@ func TestSuccessGetStreamBankHolmes(t *testing.T) {
 		User.ExampleProjectBank,
 		utils.ResourceHolmesLog,
 		params,
-		c,
 	)
 	go func() {
 		for were := range c {
@@ -286,12 +282,11 @@ func TestBalanceStream(t *testing.T) {
 	var balance Balance
 
 	b := make(chan Balance)
-	c := make(chan map[string]interface{})
 
 	var params = map[string]interface{}{}
 	params["limit"] = rand.Intn(100)
 
-	go rest.GetStream(
+	c := rest.GetStream(
 		utils.SdkVersion,
 		hosts.Bank,
 		utils.ApiVersion,
@@ -300,7 +295,6 @@ func TestBalanceStream(t *testing.T) {
 		User.ExampleProjectBank,
 		utils.ResourceBalance,
 		params,
-		c,
 	)
 	go func() {
 		for were := range c {

@@ -36,8 +36,8 @@ var resourceEvent = map[string]string{"name": "Event"}
 
 func Query(params map[string]interface{}) chan Event {
 	b := make(chan Event)
-	c := make(chan map[string]interface{})
-	go rest.GetStream(
+
+	c := rest.GetStream(
 		utils.SdkVersion,
 		hosts.Bank,
 		utils.ApiVersion,
@@ -46,7 +46,6 @@ func Query(params map[string]interface{}) chan Event {
 		User.ExampleProjectBank,
 		resourceEvent,
 		params,
-		c,
 	)
 	go func() {
 		for were := range c {

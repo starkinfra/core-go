@@ -65,8 +65,7 @@ func Get(id string) (Log, Error.StarkErrors) {
 
 func Query(params map[string]interface{}) chan Log {
 	b := make(chan Log)
-	c := make(chan map[string]interface{})
-	go rest.GetStream(
+	c := rest.GetStream(
 		utils.SdkVersion,
 		hosts.Bank,
 		utils.ApiVersion,
@@ -75,7 +74,6 @@ func Query(params map[string]interface{}) chan Log {
 		User.ExampleProjectBank,
 		utils.ResourceBoletoLog,
 		params,
-		c,
 	)
 	go func() {
 		for were := range c {
