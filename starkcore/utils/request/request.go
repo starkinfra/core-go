@@ -8,7 +8,7 @@ import (
 	Error "github.com/starkinfra/core-go/starkcore/error"
 	"github.com/starkinfra/core-go/starkcore/user/user"
 	"github.com/starkinfra/core-go/starkcore/utils/checks"
-	urls "github.com/starkinfra/core-go/starkcore/utils/url"
+	Url "github.com/starkinfra/core-go/starkcore/utils/url"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -39,7 +39,7 @@ func Fetch(host string, sdkVersion string, user user.User, method string, path s
 		url = fmt.Sprintf("https://sandbox.api.stark%v.com/%v", host, apiVersion)
 	}
 
-	url = fmt.Sprintf("%v/%v%v", url, path, urls.UrlEncode(query))
+	url = fmt.Sprintf("%v/%v%v", url, path, Url.UrlEncode(query))
 	agent := fmt.Sprintf("Go-SDK-%v-%v", host, sdkVersion)
 	client := http.Client{Timeout: time.Duration(timeout) * time.Second}
 
@@ -50,7 +50,10 @@ func Fetch(host string, sdkVersion string, user user.User, method string, path s
 	req.Header.Add("Content-Type", "application/json")
 	headers := authenticationHeaders(user, body, req)
 
-	rawResponse, _ := client.Do(headers)
+	rawResponse, err := client.Do(headers)
+	if err != nil {
+		panic(err)
+	}
 	responseContent, _ := ioutil.ReadAll(rawResponse.Body)
 	response := Response{Status: rawResponse.StatusCode, Content: responseContent}
 

@@ -7,8 +7,7 @@ import (
 	Log "github.com/starkinfra/core-go/tests/utils/boleto/log"
 	Event "github.com/starkinfra/core-go/tests/utils/event"
 	Invoice "github.com/starkinfra/core-go/tests/utils/invoice"
-	"github.com/starkinfra/core-go/tests/utils/issuing/product"
-	User "github.com/starkinfra/core-go/tests/utils/user"
+	"github.com/starkinfra/core-go/tests/utils/sign"
 	"io/ioutil"
 	"math/rand"
 	"testing"
@@ -66,6 +65,16 @@ func TestBoletoLogGet(t *testing.T) {
 	fmt.Println(boleto)
 }
 
+func TestDocumentGet(t *testing.T) {
+	document, err := sign.Get("52e2ab8389dd4fa5856b095ce6a9b125")
+	if err.Errors != nil {
+		for _, err := range err.Errors {
+			panic(err)
+		}
+	}
+	fmt.Println(document)
+}
+
 func TestBoletoLogQuery(t *testing.T) {
 	var params = map[string]interface{}{}
 	params["limit"] = 300
@@ -78,14 +87,14 @@ func TestBoletoLogQuery(t *testing.T) {
 	}
 }
 
-func TestProductLogQuery(t *testing.T) {
-
-	products := product.Query(nil)
-
-	for product := range products {
-		fmt.Println("i: product", product.Id)
-	}
-}
+//func TestProductLogQuery(t *testing.T) {
+//
+//	products := product.Query(nil)
+//
+//	for product := range products {
+//		fmt.Println("i: product", product.Id)
+//	}
+//}
 
 func TestBoletoLogPage(t *testing.T) {
 	var params = map[string]interface{}{}
@@ -154,15 +163,15 @@ func TestInvoiceGetQrcode(t *testing.T) {
 	}
 }
 
-func TestWorkspaceReplaceQuery(t *testing.T) {
-	var params = map[string]interface{}{}
-	params["limit"] = 1
-
-	invoices := Invoice.Query(params, User.ExampleOrganization.Replace("4690697751887872"))
-	for invoice := range invoices {
-		fmt.Println("invoice's id: ", invoice.Id)
-	}
-}
+//func TestWorkspaceReplaceQuery(t *testing.T) {
+//	var params = map[string]interface{}{}
+//	params["limit"] = 1
+//
+//	invoices := Invoice.Query(params, User.ExampleOrganization.Replace("4690697751887872"))
+//	for invoice := range invoices {
+//		fmt.Println("invoice's id: ", invoice.Id)
+//	}
+//}
 
 func TestEventQuery(t *testing.T) {
 	var params = map[string]interface{}{}
