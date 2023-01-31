@@ -11,6 +11,7 @@ import (
 	urls "github.com/starkinfra/core-go/starkcore/utils/url"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -40,21 +41,16 @@ func Fetch(host string, sdkVersion string, user user.User, method string, path s
 
 	url = fmt.Sprintf("%v/%v%v", url, path, urls.UrlEncode(query))
 	agent := fmt.Sprintf("Go-SDK-%v-%v", host, sdkVersion)
-	accessTime := strconv.FormatInt(time.Now().Unix(), 10)
-	message := fmt.Sprintf("%v:%v:%v", user.GetAcessId(), accessTime, body)
-	signature := ecdsa.Sign(message, user.GetPrivateKey()).ToBase64()
 	client := http.Client{Timeout: time.Duration(timeout) * time.Second}
 
 	req, _ := http.NewRequest(method, url, strings.NewReader(body))
 
-	req.Header.Add("Access-Id", user.GetAcessId())
-	req.Header.Add("Access-Time", accessTime)
-	req.Header.Add("Access-Signature", signature)
-	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("User-Agent", agent)
 	req.Header.Add("Accept-Language", language)
+	req.Header.Add("Content-Type", "application/json")
+	headers := authenticationHeaders(user, body, req)
 
-	rawResponse, _ := client.Do(req)
+	rawResponse, _ := client.Do(headers)
 	responseContent, _ := ioutil.ReadAll(rawResponse.Body)
 	response := Response{Status: rawResponse.StatusCode, Content: responseContent}
 
@@ -71,4 +67,17 @@ func Fetch(host string, sdkVersion string, user user.User, method string, path s
 		return Response{}, err
 	}
 	return response, Error.StarkErrors{}
+}
+
+func authenticationHeaders(user user.User, body string, req *http.Request) *http.Request {
+	if reflect.TypeOf(user).Name() == "PublicUser" {
+		return req
+	}
+	accessTime := strconv.FormatInt(time.Now().Unix(), 10)
+	message := fmt.Sprintf("%v:%v:%v", user.GetAcessId(), accessTime, body)
+	signature := ecdsa.Sign(message, user.GetPrivateKey()).ToBase64()
+	req.Header.Add("Access-Id", user.GetAcessId())
+	req.Header.Add("Access-Time", accessTime)
+	req.Header.Add("Access-Signature", signature)
+	return req
 }
