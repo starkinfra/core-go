@@ -228,10 +228,11 @@ func PostSubResource(sdkVersion string, host string, apiVersion string, user use
 		sdkVersion,
 		user,
 		"POST",
-		fmt.Sprintf("%v/%v/%v",
+		fmt.Sprintf(
+			"%v/%v/%v",
 			api.Endpoint(resource),
 			id,
-			subResource,
+			api.Endpoint(subResource),
 		),
 		api.ApiJson(entity, resource),
 		apiVersion,
@@ -246,7 +247,7 @@ func PostSubResource(sdkVersion string, host string, apiVersion string, user use
 	if unmarshalError != nil {
 		panic(unmarshalError)
 	}
-	jsonBytes, _ := json.Marshal(data[api.LastName(resource)])
+	jsonBytes, _ := json.Marshal(data[api.LastName(subResource)])
 	return jsonBytes, err
 }
 

@@ -8,6 +8,7 @@ import (
 	Event "github.com/starkinfra/core-go/tests/utils/event"
 	Invoice "github.com/starkinfra/core-go/tests/utils/invoice"
 	"github.com/starkinfra/core-go/tests/utils/issuing/product"
+	"github.com/starkinfra/core-go/tests/utils/sign"
 	User "github.com/starkinfra/core-go/tests/utils/user"
 	"io/ioutil"
 	"math/rand"
@@ -64,6 +65,16 @@ func TestBoletoLogGet(t *testing.T) {
 		}
 	}
 	fmt.Println(boleto)
+}
+
+func TestDocumentGet(t *testing.T) {
+	document, err := sign.Get("52e2ab8389dd4fa5856b095ce6a9b125")
+	if err.Errors != nil {
+		for _, err := range err.Errors {
+			panic(err)
+		}
+	}
+	fmt.Println(document)
 }
 
 func TestBoletoLogQuery(t *testing.T) {
