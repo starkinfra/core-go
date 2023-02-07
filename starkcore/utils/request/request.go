@@ -48,9 +48,9 @@ func Fetch(host string, sdkVersion string, user user.User, method string, path s
 	req.Header.Add("User-Agent", agent)
 	req.Header.Add("Accept-Language", language)
 	req.Header.Add("Content-Type", "application/json")
-	headers := authenticationHeaders(user, body, req)
+	req = authenticationHeaders(user, body, req)
 
-	rawResponse, err := client.Do(headers)
+	rawResponse, err := client.Do(req)
 	if err != nil {
 		panic(err)
 	}
