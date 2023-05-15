@@ -83,7 +83,7 @@ func getPublicKey(sdkVersion, host, apiVersion string, language string, timeout 
 		apiVersion,
 		language,
 		timeout,
-		"public-key",
+		"/public-key",
 		user,
 		nil,
 	)
