@@ -13,9 +13,12 @@ Given a version number MAJOR.MINOR.PATCH, increment:
 
 
 ## [Unreleased]
+
+## [0.2.0] - 2023-05-15
 ### Added
 - PostRaw method
 
+## [0.1.0] - 2023-02-07
 ### Added
 - request method to support starksign requests
 
