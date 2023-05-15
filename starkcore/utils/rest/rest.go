@@ -324,3 +324,27 @@ func GetRaw(sdkVersion string, host string, apiVersion string, language string, 
 	}
 	return data, err
 }
+
+func PostRaw(sdkVersion string, host string, apiVersion string, language string, timeout int, path string, payload interface{}, user user.User, query map[string]interface{}) (map[string]interface{}, Error.StarkErrors) {
+	data := map[string]interface{}{}
+	response, err := request.Fetch(
+		host,
+		sdkVersion,
+		user,
+		"POST",
+		path,
+		payload,
+		apiVersion,
+		language,
+		timeout,
+		query,
+	)
+	if err.Errors != nil {
+		return nil, err
+	}
+	unmarshalError := json.Unmarshal(response.Content, &data)
+	if unmarshalError != nil {
+		panic(unmarshalError)
+	}
+	return data, err
+}

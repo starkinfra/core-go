@@ -14,6 +14,9 @@ Given a version number MAJOR.MINOR.PATCH, increment:
 
 ## [Unreleased]
 ### Added
+- PostRaw method
+
+### Added
 - request method to support starksign requests
 
 ## [0.0.1] - 2023-01-26
