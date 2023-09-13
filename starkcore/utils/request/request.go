@@ -43,7 +43,10 @@ func Fetch(host string, sdkVersion string, user user.User, method string, path s
 	agent := fmt.Sprintf("Go-SDK-%v-%v", host, sdkVersion)
 	client := http.Client{Timeout: time.Duration(timeout) * time.Second}
 
-	req, _ := http.NewRequest(method, url, strings.NewReader(body))
+	req, err := http.NewRequest(method, url, strings.NewReader(body))
+	if err != nil {
+		panic(err)
+	}
 
 	req.Header.Add("User-Agent", agent)
 	req.Header.Add("Accept-Language", language)
@@ -54,7 +57,12 @@ func Fetch(host string, sdkVersion string, user user.User, method string, path s
 	if err != nil {
 		panic(err)
 	}
-	responseContent, _ := ioutil.ReadAll(rawResponse.Body)
+
+	responseContent, err := ioutil.ReadAll(rawResponse.Body)
+	if err != nil {
+		panic(err)
+	}
+
 	response := Response{Status: rawResponse.StatusCode, Content: responseContent}
 
 	if response.Status == 400 {
