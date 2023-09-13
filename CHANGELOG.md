@@ -13,6 +13,8 @@ Given a version number MAJOR.MINOR.PATCH, increment:
 
 
 ## [Unreleased]
+### Fixed
+- request handle error
 
 ## [0.2.0] - 2023-05-15
 ### Added
