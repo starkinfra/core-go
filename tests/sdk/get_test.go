@@ -19,7 +19,7 @@ func TestBoletoGet(t *testing.T) {
 	var params = map[string]interface{}{}
 	params["limit"] = rand.Intn(100)
 
-	boleto, err := Boleto.Get("4537841761648640")
+	boleto, err := Boleto.Get("6717749669658624")
 	if err.Errors != nil {
 		for _, e := range err.Errors {
 			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
@@ -32,7 +32,14 @@ func TestBoletoQuery(t *testing.T) {
 	var params = map[string]interface{}{}
 	params["limit"] = 200
 
-	boletos := Boleto.Query(params)
+	// receber o erro aqui tbm...
+
+	boletos, err := Boleto.Query(params)
+
+	if err != nil {
+		panic("panic no lugar certo !!")
+	}
+
 	for boleto := range boletos {
 		fmt.Println("id:", boleto.Id)
 	}
@@ -82,7 +89,11 @@ func TestBoletoLogQuery(t *testing.T) {
 	params["limit"] = 300
 	params["after"] = "2022-11-16"
 
-	boletos := Log.Query(nil)
+	boletos, err := Log.Query(nil)
+
+	if err != nil {
+		panic("panic no lugar certo !!")
+	}
 
 	for boleto := range boletos {
 		fmt.Println("i, boleto", boleto.Id)
@@ -91,7 +102,11 @@ func TestBoletoLogQuery(t *testing.T) {
 
 func TestProductLogQuery(t *testing.T) {
 
-	products := product.Query(nil)
+	products, err := product.Query(nil)
+
+	if err != nil {
+		panic("panic no lugar certo !!")
+	}
 
 	for product := range products {
 		fmt.Println("i: product", product.Id)
@@ -169,7 +184,11 @@ func TestWorkspaceReplaceQuery(t *testing.T) {
 	var params = map[string]interface{}{}
 	params["limit"] = 1
 
-	invoices := Invoice.Query(params, User.ExampleOrganization.Replace("4690697751887872"))
+	invoices, err := Invoice.Query(params, User.ExampleOrganization.Replace("4690697751887872"))
+
+	if err != nil {
+		panic("panic no lugar certo !!")
+	}
 	for invoice := range invoices {
 		fmt.Println("invoice's id: ", invoice.Id)
 	}
@@ -180,9 +199,25 @@ func TestEventQuery(t *testing.T) {
 	params["isDelivered"] = true
 	params["limit"] = 300
 
-	events := Event.Query(params)
+	events, err := Event.Query(params)
 
-	for event := range events {
-		fmt.Println(event.Id)
+	for {
+		select{
+		case sara := <- err:
+			fmt.Println(sara)
+		 	panic("panic no lugar certo !!")
+		case pateu := <- events:
+			fmt.Println(pateu.Id)
+		}
 	}
+
+
+	// old code
+	// if err != nil {
+	// 	panic("panic no lugar certo !!")
+	// }
+
+	// for event := range events {
+	// 	fmt.Println(event.Id)
+	// }
 }

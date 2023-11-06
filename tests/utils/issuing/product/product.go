@@ -34,7 +34,7 @@ type IssuingProduct struct {
 var object IssuingProduct
 var resourceIssuingProduct = map[string]string{"name": "IssuingProduct"}
 
-func Query(params map[string]interface{}) chan IssuingProduct {
+func Query(params map[string]interface{}) (chan IssuingProduct, chan error) {
 	//	Retrieve IssuingProduct structs
 	//
 	//	Receive a generator of IssuingProduct structs previously registered in the Stark Infra API
@@ -48,7 +48,9 @@ func Query(params map[string]interface{}) chan IssuingProduct {
 	//	Return:
 	//	- generator of IssuingBin structs with updated attributes
 	b := make(chan IssuingProduct)
-	c := rest.GetStream(
+	erroChannel := make(chan IssuingProduct)
+
+	c, err := rest.GetStream(
 		Utils.SdkVersion,
 		hosts.Infra,
 		Utils.ApiVersion,
@@ -58,6 +60,11 @@ func Query(params map[string]interface{}) chan IssuingProduct {
 		resourceIssuingProduct,
 		params,
 	)
+
+	if err != nil {
+		return erroChannel, err
+	}
+
 	go func() {
 		for were := range c {
 			wereByte, _ := json.Marshal(were)
@@ -69,5 +76,5 @@ func Query(params map[string]interface{}) chan IssuingProduct {
 		}
 		close(b)
 	}()
-	return b
+	return b, nil
 }

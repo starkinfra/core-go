@@ -2,6 +2,9 @@ package event
 
 import (
 	"encoding/json"
+	"fmt"
+	//"errors"
+
 	"github.com/starkinfra/core-go/starkcore/utils/hosts"
 	"github.com/starkinfra/core-go/starkcore/utils/rest"
 	"github.com/starkinfra/core-go/tests/utils"
@@ -34,10 +37,11 @@ type Event struct {
 var object Event
 var resourceEvent = map[string]string{"name": "Event"}
 
-func Query(params map[string]interface{}) chan Event {
+func Query(params map[string]interface{}) (chan Event, chan error) {
 	b := make(chan Event)
+	erroChannel := make(chan error)
 
-	c := rest.GetStream(
+	c, err := rest.GetStream(
 		utils.SdkVersion,
 		hosts.Bank,
 		utils.ApiVersion,
@@ -47,16 +51,45 @@ func Query(params map[string]interface{}) chan Event {
 		resourceEvent,
 		params,
 	)
-	go func() {
-		for were := range c {
-			wereByte, _ := json.Marshal(were)
-			err := json.Unmarshal(wereByte, &object)
-			if err != nil {
-				print(err)
+
+	go func(){
+		for {
+			defer close(b)
+			defer close(erroChannel)
+			select{
+				case errors := <- err:
+					fmt.Println("tem coisa aqui ?? case errors em query")
+					erroChannel <- errors
+					return 
+	
+				case value := <- c:
+					
+					wereByte, _ := json.Marshal(value)
+					err := json.Unmarshal(wereByte, &object)
+					if err != nil {
+						print(err)
+					}
+					b <- object
 			}
-			b <- object
 		}
-		close(b)
 	}()
-	return b
+	
+	return b, erroChannel
+
+
+	// if err != nil {
+	// 	return erroChannel, err
+	// }
+
+	// go func() {
+	// 	for were := range c {
+	// 		wereByte, _ := json.Marshal(were)
+	// 		err := json.Unmarshal(wereByte, &object)
+	// 		if err != nil {
+	// 			print(err)
+	// 		}
+	// 		b <- object
+	// 	}
+	// 	close(b)
+	// }()
 }
