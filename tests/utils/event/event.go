@@ -54,12 +54,14 @@ func Query(params map[string]interface{}) (chan Event, chan error) {
 
 	go func(){
 		for {
-			defer close(b)
-			defer close(erroChannel)
+			//defer close(b)
+			//defer close(erroChannel)
 			select{
 				case errors := <- err:
 					fmt.Println("tem coisa aqui ?? case errors em query")
 					erroChannel <- errors
+					close(b)
+					close(erroChannel)
 					return 
 	
 				case value := <- c:

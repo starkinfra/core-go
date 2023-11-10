@@ -198,16 +198,20 @@ func TestEventQuery(t *testing.T) {
 	var params = map[string]interface{}{}
 	params["isDelivered"] = true
 	params["limit"] = 300
+	count := 0
 
 	events, err := Event.Query(params)
 
 	for {
 		select{
 		case sara := <- err:
-			fmt.Println(sara)
-		 	panic("panic no lugar certo !!")
+			if sara != nil {
+				panic("panic no lugar certo !!")
+			}
 		case pateu := <- events:
 			fmt.Println(pateu.Id)
+			count += 1
+			fmt.Println(count)
 		}
 	}
 

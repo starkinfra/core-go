@@ -100,7 +100,7 @@ func GetStream(sdkVersion string, host string, apiVersion string, language strin
 					limit -= 100
 					limitQuery["limit"] = int(math.Min(float64(limit), 100))
 				}
-				limitQuery["cursor"] = "CkgKFAoHY3JlYXRlZBIJCPPr1taEnoIDEixqFGl-YXBpLW1zLWludm9pY2Utc2J4chQLEgdJbnZvaWNlGICAgOzBxukJDBgAIAE="
+				limitQuery["cursor"] = cursor
 				if cursor == "" {
 					isNilCursor = true
 				}
