@@ -204,14 +204,15 @@ func TestEventQuery(t *testing.T) {
 
 	for {
 		select{
-		case sara := <- err:
-			if sara != nil {
-				panic("panic no lugar certo !!")
-			}
-		case pateu := <- events:
-			fmt.Println(pateu.Id)
-			count += 1
-			fmt.Println(count)
+			case sara := <- err:
+				if sara != nil {
+					panic("panic no lugar certo !!")
+				}
+				return
+			case pateu := <- events:
+				fmt.Println(pateu.Id)
+				count += 1
+				fmt.Println(count)
 		}
 	}
 
