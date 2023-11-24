@@ -63,9 +63,10 @@ func Get(id string) (Log, Error.StarkErrors) {
 	return log, err
 }
 
-func Query(params map[string]interface{}) chan Log {
+func Query(params map[string]interface{}) (chan Log, chan error) {
 	b := make(chan Log)
-	c := rest.GetStream(
+	erroChannel := make(chan error)
+	c, err := rest.GetStream(
 		utils.SdkVersion,
 		hosts.Bank,
 		utils.ApiVersion,
@@ -75,18 +76,25 @@ func Query(params map[string]interface{}) chan Log {
 		utils.ResourceBoletoLog,
 		params,
 	)
-	go func() {
-		for were := range c {
-			wereByte, _ := json.Marshal(were)
-			err := json.Unmarshal(wereByte, &log)
-			if err != nil {
-				print(err)
+	go func(){
+		for {
+			select{
+				case errors := <- err:
+					erroChannel <- errors
+					return 
+	
+				case value := <- c:
+					
+					wereByte, _ := json.Marshal(value)
+					err := json.Unmarshal(wereByte, &log)
+					if err != nil {
+						print(err)
+					}
+					b <- log
 			}
-			b <- log
 		}
-		close(b)
 	}()
-	return b
+	return b, erroChannel
 }
 
 func Page(params map[string]interface{}) ([]Log, string, Error.StarkErrors) {

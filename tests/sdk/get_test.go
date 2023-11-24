@@ -2,6 +2,10 @@ package sdk
 
 import (
 	"fmt"
+	"io/ioutil"
+	"math/rand"
+	"testing"
+
 	"github.com/starkinfra/core-go/starkcore/utils/api"
 	Boleto "github.com/starkinfra/core-go/tests/utils/boleto"
 	Log "github.com/starkinfra/core-go/tests/utils/boleto/log"
@@ -10,9 +14,6 @@ import (
 	"github.com/starkinfra/core-go/tests/utils/issuing/product"
 	"github.com/starkinfra/core-go/tests/utils/sign"
 	User "github.com/starkinfra/core-go/tests/utils/user"
-	"io/ioutil"
-	"math/rand"
-	"testing"
 )
 
 func TestBoletoGet(t *testing.T) {
@@ -32,9 +33,18 @@ func TestBoletoQuery(t *testing.T) {
 	var params = map[string]interface{}{}
 	params["limit"] = 200
 
-	boletos := Boleto.Query(params)
-	for boleto := range boletos {
-		fmt.Println("id:", boleto.Id)
+	boletos, err := Boleto.Query(params)
+
+	for {
+		select {
+		case errors := <-err:
+			if errors != nil {
+				panic("your custom panic here")
+			}
+			return
+		case result := <-boletos:
+			fmt.Println(result.Id)
+		}
 	}
 }
 
@@ -82,19 +92,35 @@ func TestBoletoLogQuery(t *testing.T) {
 	params["limit"] = 300
 	params["after"] = "2022-11-16"
 
-	boletos := Log.Query(nil)
+	boletos, err := Log.Query(params)
 
-	for boleto := range boletos {
-		fmt.Println("i, boleto", boleto.Id)
+	for {
+		select {
+		case errors := <-err:
+			if errors != nil {
+				panic("your custom panic here")
+			}
+			return
+		case result := <-boletos:
+			fmt.Println(result.Id)
+		}
 	}
 }
 
 func TestProductLogQuery(t *testing.T) {
 
-	products := product.Query(nil)
+	products, err := product.Query(nil)
 
-	for product := range products {
-		fmt.Println("i: product", product.Id)
+	for {
+		select {
+		case errors := <-err:
+			if errors != nil {
+				panic("your custom panic here")
+			}
+			return
+		case result := <-products:
+			fmt.Println(result.Id)
+		}
 	}
 }
 
@@ -169,9 +195,17 @@ func TestWorkspaceReplaceQuery(t *testing.T) {
 	var params = map[string]interface{}{}
 	params["limit"] = 1
 
-	invoices := Invoice.Query(params, User.ExampleOrganization.Replace("4690697751887872"))
-	for invoice := range invoices {
-		fmt.Println("invoice's id: ", invoice.Id)
+	invoices, err := Invoice.Query(params, User.ExampleOrganization.Replace("4690697751887872"))
+	for {
+		select {
+		case errors := <-err:
+			if errors != nil {
+				panic("your custom panic here")
+			}
+			return
+		case result := <-invoices:
+			fmt.Println(result.Id)
+		}
 	}
 }
 
@@ -180,9 +214,16 @@ func TestEventQuery(t *testing.T) {
 	params["isDelivered"] = true
 	params["limit"] = 300
 
-	events := Event.Query(params)
-
-	for event := range events {
-		fmt.Println(event.Id)
+	events, err := Event.Query(params)
+	for {
+		select {
+		case errors := <-err:
+			if errors != nil {
+				panic("your custom panic here")
+			}
+			return
+		case result := <-events:
+			fmt.Println(result.Id)
+		}
 	}
 }

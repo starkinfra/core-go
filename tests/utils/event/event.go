@@ -34,10 +34,11 @@ type Event struct {
 var object Event
 var resourceEvent = map[string]string{"name": "Event"}
 
-func Query(params map[string]interface{}) chan Event {
+func Query(params map[string]interface{}) (chan Event, chan error) {
 	b := make(chan Event)
+	erroChannel := make(chan error)
 
-	c := rest.GetStream(
+	c, err := rest.GetStream(
 		utils.SdkVersion,
 		hosts.Bank,
 		utils.ApiVersion,
@@ -47,16 +48,23 @@ func Query(params map[string]interface{}) chan Event {
 		resourceEvent,
 		params,
 	)
-	go func() {
-		for were := range c {
-			wereByte, _ := json.Marshal(were)
-			err := json.Unmarshal(wereByte, &object)
-			if err != nil {
-				print(err)
+	go func(){
+		for {
+			select{
+				case errors := <- err:
+					erroChannel <- errors
+					return 
+	
+				case value := <- c:
+					
+					wereByte, _ := json.Marshal(value)
+					err := json.Unmarshal(wereByte, &object)
+					if err != nil {
+						print(err)
+					}
+					b <- object
 			}
-			b <- object
 		}
-		close(b)
 	}()
-	return b
+	return b, erroChannel
 }
