@@ -11,6 +11,7 @@ import (
 	Log "github.com/starkinfra/core-go/tests/utils/boleto/log"
 	Invoice "github.com/starkinfra/core-go/tests/utils/invoice"
 	User "github.com/starkinfra/core-go/tests/utils/user"
+	Error "github.com/starkinfra/core-go/starkcore/error"
 	"io/ioutil"
 	"math/rand"
 	"testing"
@@ -20,10 +21,11 @@ import (
 func TestSuccessGetStreamBank(t *testing.T) {
 	var boleto Boleto.Boleto
 	b := make(chan Boleto.Boleto)
+	erroChannel := make(chan Error.StarkErrors)
 	var params = map[string]interface{}{}
 	params["limit"] = 300
 
-	c := rest.GetStream(
+	c, err := rest.GetStream(
 		utils.SdkVersion,
 		hosts.Bank,
 		utils.ApiVersion,
@@ -33,16 +35,23 @@ func TestSuccessGetStreamBank(t *testing.T) {
 		utils.ResourceBoleto,
 		params,
 	)
-	go func() {
-		for were := range c {
-			wereByte, _ := json.Marshal(were)
-			err := json.Unmarshal(wereByte, &boleto)
-			if err != nil {
-				print(err)
+	go func(){
+		for {
+			select{
+				case errors := <- err:
+					erroChannel <- errors
+					return 
+	
+				case value := <- c:
+					
+					wereByte, _ := json.Marshal(value)
+					err := json.Unmarshal(wereByte, &boleto)
+					if err != nil {
+						print(err)
+					}
+					b <- boleto
 			}
-			b <- boleto
 		}
-		close(b)
 	}()
 
 	for entity := range b {
@@ -237,13 +246,14 @@ func TestSuccessGetStreamBankHolmes(t *testing.T) {
 	}
 
 	var log LogHolmes
-
+	erroChannel := make(chan Error.StarkErrors)
+	
 	var params = map[string]interface{}{}
 	params["after"] = "2022-11-16"
 	params["limit"] = 203
 
 	b := make(chan LogHolmes)
-	c := rest.GetStream(
+	c, err := rest.GetStream(
 		utils.SdkVersion,
 		hosts.Bank,
 		utils.ApiVersion,
@@ -253,16 +263,23 @@ func TestSuccessGetStreamBankHolmes(t *testing.T) {
 		utils.ResourceHolmesLog,
 		params,
 	)
-	go func() {
-		for were := range c {
-			wereByte, _ := json.Marshal(were)
-			err := json.Unmarshal(wereByte, &log)
-			if err != nil {
-				print(err)
+	go func(){
+		for {
+			select{
+				case errors := <- err:
+					erroChannel <- errors
+					return 
+	
+				case value := <- c:
+					
+					wereByte, _ := json.Marshal(value)
+					err := json.Unmarshal(wereByte, &log)
+					if err != nil {
+						print(err)
+					}
+					b <- log
 			}
-			b <- log
 		}
-		close(b)
 	}()
 
 	for entity := range b {
@@ -282,11 +299,12 @@ func TestBalanceStream(t *testing.T) {
 	var balance Balance
 
 	b := make(chan Balance)
+	erroChannel := make(chan Error.StarkErrors)
 
 	var params = map[string]interface{}{}
 	params["limit"] = rand.Intn(100)
 
-	c := rest.GetStream(
+	c, err := rest.GetStream(
 		utils.SdkVersion,
 		hosts.Bank,
 		utils.ApiVersion,
@@ -296,16 +314,24 @@ func TestBalanceStream(t *testing.T) {
 		utils.ResourceBalance,
 		params,
 	)
-	go func() {
-		for were := range c {
-			wereByte, _ := json.Marshal(were)
-			err := json.Unmarshal(wereByte, &balance)
-			if err != nil {
-				print(err)
+
+	go func(){
+		for {
+			select{
+				case errors := <- err:
+					erroChannel <- errors
+					return 
+	
+				case value := <- c:
+					
+					wereByte, _ := json.Marshal(value)
+					err := json.Unmarshal(wereByte, &balance)
+					if err != nil {
+						print(err)
+					}
+					b <- balance
 			}
-			b <- balance
 		}
-		close(b)
 	}()
 
 	for entity := range b {

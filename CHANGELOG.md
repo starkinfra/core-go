@@ -13,6 +13,8 @@ Given a version number MAJOR.MINOR.PATCH, increment:
 
 
 ## [Unreleased]
+### Changed
+- getStream method return
 
 ## [0.2.1] - 2023-09-13
 ### Fixed

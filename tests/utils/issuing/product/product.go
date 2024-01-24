@@ -6,6 +6,7 @@ import (
 	"github.com/starkinfra/core-go/starkcore/utils/rest"
 	Utils "github.com/starkinfra/core-go/tests/utils"
 	User "github.com/starkinfra/core-go/tests/utils/user"
+	Error "github.com/starkinfra/core-go/starkcore/error"
 	"time"
 )
 
@@ -31,10 +32,9 @@ type IssuingProduct struct {
 	Created     *time.Time `json:",omitempty"`
 }
 
-var object IssuingProduct
 var resourceIssuingProduct = map[string]string{"name": "IssuingProduct"}
 
-func Query(params map[string]interface{}) chan IssuingProduct {
+func Query(params map[string]interface{}) (chan IssuingProduct, chan Error.StarkErrors) {
 	//	Retrieve IssuingProduct structs
 	//
 	//	Receive a generator of IssuingProduct structs previously registered in the Stark Infra API
@@ -47,8 +47,10 @@ func Query(params map[string]interface{}) chan IssuingProduct {
 	//
 	//	Return:
 	//	- generator of IssuingBin structs with updated attributes
+	var object IssuingProduct
 	b := make(chan IssuingProduct)
-	c := rest.GetStream(
+	erroChannel := make(chan Error.StarkErrors)
+	c, err := rest.GetStream(
 		Utils.SdkVersion,
 		hosts.Infra,
 		Utils.ApiVersion,
@@ -58,16 +60,23 @@ func Query(params map[string]interface{}) chan IssuingProduct {
 		resourceIssuingProduct,
 		params,
 	)
-	go func() {
-		for were := range c {
-			wereByte, _ := json.Marshal(were)
-			err := json.Unmarshal(wereByte, &object)
-			if err != nil {
-				print(err)
+	go func(){
+		for {
+			select{
+				case errors := <- err:
+					erroChannel <- errors
+					return 
+	
+				case value := <- c:
+					
+					wereByte, _ := json.Marshal(value)
+					err := json.Unmarshal(wereByte, &object)
+					if err != nil {
+						print(err)
+					}
+					b <- object
 			}
-			b <- object
 		}
-		close(b)
 	}()
-	return b
+	return b, erroChannel
 }

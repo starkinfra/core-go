@@ -3,13 +3,13 @@ package invoice
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 	Error "github.com/starkinfra/core-go/starkcore/error"
 	"github.com/starkinfra/core-go/starkcore/user/user"
 	"github.com/starkinfra/core-go/starkcore/utils/hosts"
 	"github.com/starkinfra/core-go/starkcore/utils/rest"
 	"github.com/starkinfra/core-go/tests/utils"
 	User "github.com/starkinfra/core-go/tests/utils/user"
-	"time"
 )
 
 type Invoice struct {
@@ -38,8 +38,6 @@ type Invoice struct {
 	Updated        string                   `json:",omitempty"`
 }
 
-var invoice Invoice
-var invoices []Invoice
 var ResourceInvoice = map[string]string{"name": "Invoice"}
 
 type Payment struct {
@@ -54,7 +52,6 @@ type Payment struct {
 	Method        string `json:",omitempty"`
 }
 
-var payment Payment
 var subResourcePayment = map[string]string{"name": "Payment"}
 
 func Create(invoices []Invoice) ([]Invoice, Error.StarkErrors) {
@@ -101,9 +98,11 @@ func CreateWithUser(invoices []Invoice, user user.User) ([]Invoice, Error.StarkE
 	return invoices, err
 }
 
-func Query(params map[string]interface{}, user user.User) chan Invoice {
+func Query(params map[string]interface{}, user user.User) (chan Invoice, chan Error.StarkErrors) {
+	var invoice Invoice
 	b := make(chan Invoice)
-	c := rest.GetStream(
+	erroChannel := make(chan Error.StarkErrors)
+	c, err := rest.GetStream(
 		utils.SdkVersion,
 		hosts.Bank,
 		utils.ApiVersion,
@@ -114,20 +113,27 @@ func Query(params map[string]interface{}, user user.User) chan Invoice {
 		params,
 	)
 	go func() {
-		for were := range c {
-			wereByte, _ := json.Marshal(were)
-			err := json.Unmarshal(wereByte, &invoice)
-			if err != nil {
-				print(err)
-			}
-			b <- invoice
+		for {
+			select {
+				case errors := <-err:
+					erroChannel <- errors
+					return
+
+				case value := <-c:
+					wereByte, _ := json.Marshal(value)
+					err := json.Unmarshal(wereByte, &invoice)
+					if err != nil {
+						print(err)
+					}
+					b <- invoice
+				}
 		}
-		close(b)
 	}()
-	return b
+	return b, erroChannel
 }
 
 func Update(id string) (Invoice, Error.StarkErrors) {
+	var invoice Invoice
 	var invoicePatch = map[string]interface{}{}
 	invoicePatch["amount"] = 1
 
@@ -186,6 +192,7 @@ func Pdf(id string) ([]byte, Error.StarkErrors) {
 }
 
 func GetPayment(id string) (Payment, Error.StarkErrors) {
+	var payment Payment
 	get, err := rest.GetSubResource(
 		utils.SdkVersion,
 		hosts.Bank,
