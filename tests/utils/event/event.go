@@ -5,6 +5,7 @@ import (
 	"github.com/starkinfra/core-go/starkcore/utils/hosts"
 	"github.com/starkinfra/core-go/starkcore/utils/rest"
 	"github.com/starkinfra/core-go/tests/utils"
+	Error "github.com/starkinfra/core-go/starkcore/error"
 	User "github.com/starkinfra/core-go/tests/utils/user"
 )
 
@@ -31,13 +32,14 @@ type Event struct {
 	WorkspaceId  string      `json:",omitempty"`
 }
 
-var object Event
 var resourceEvent = map[string]string{"name": "Event"}
 
-func Query(params map[string]interface{}) chan Event {
+func Query(params map[string]interface{}) (chan Event, chan Error.StarkErrors) {
+	var object Event
 	b := make(chan Event)
+	erroChannel := make(chan Error.StarkErrors)
 
-	c := rest.GetStream(
+	c, err := rest.GetStream(
 		utils.SdkVersion,
 		hosts.Bank,
 		utils.ApiVersion,
@@ -47,16 +49,23 @@ func Query(params map[string]interface{}) chan Event {
 		resourceEvent,
 		params,
 	)
-	go func() {
-		for were := range c {
-			wereByte, _ := json.Marshal(were)
-			err := json.Unmarshal(wereByte, &object)
-			if err != nil {
-				print(err)
+	go func(){
+		for {
+			select{
+				case errors := <- err:
+					erroChannel <- errors
+					return 
+	
+				case value := <- c:
+					
+					wereByte, _ := json.Marshal(value)
+					err := json.Unmarshal(wereByte, &object)
+					if err != nil {
+						print(err)
+					}
+					b <- object
 			}
-			b <- object
 		}
-		close(b)
 	}()
-	return b
+	return b, erroChannel
 }

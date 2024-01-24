@@ -40,8 +40,6 @@ type Boleto struct {
 }
 
 var resourceBoleto = map[string]string{"name": "Boleto"}
-var boletos []Boleto
-var boleto Boleto
 
 func Create(boletos []Boleto) ([]Boleto, Error.StarkErrors) {
 	create, err := rest.PostMulti(
@@ -66,6 +64,7 @@ func Create(boletos []Boleto) ([]Boleto, Error.StarkErrors) {
 }
 
 func Get(id string) (Boleto, Error.StarkErrors) {
+	var boleto Boleto
 	get, err := rest.GetId(
 		utils.SdkVersion,
 		hosts.Bank,
@@ -87,9 +86,11 @@ func Get(id string) (Boleto, Error.StarkErrors) {
 	return boleto, err
 }
 
-func Query(params map[string]interface{}) chan Boleto {
+func Query(params map[string]interface{}) (chan Boleto, chan Error.StarkErrors) {
+	var boleto Boleto
 	b := make(chan Boleto)
-	c := rest.GetStream(
+	erroChannel := make(chan Error.StarkErrors)
+	c, err := rest.GetStream(
 		utils.SdkVersion,
 		hosts.Bank,
 		utils.ApiVersion,
@@ -99,21 +100,29 @@ func Query(params map[string]interface{}) chan Boleto {
 		resourceBoleto,
 		params,
 	)
-	go func() {
-		for were := range c {
-			wereByte, _ := json.Marshal(were)
-			err := json.Unmarshal(wereByte, &boleto)
-			if err != nil {
-				print(err)
+	go func(){
+		for {
+			select{
+				case errors := <- err:
+					erroChannel <- errors
+					return 
+	
+				case value := <- c:
+					
+					wereByte, _ := json.Marshal(value)
+					err := json.Unmarshal(wereByte, &boleto)
+					if err != nil {
+						print(err)
+					}
+					b <- boleto
 			}
-			b <- boleto
 		}
-		close(b)
 	}()
-	return b
+	return b, erroChannel
 }
 
 func Page(params map[string]interface{}) ([]Boleto, string, Error.StarkErrors) {
+	var boletos []Boleto
 	page, cursor, err := rest.GetPage(
 		utils.SdkVersion,
 		hosts.Bank,
@@ -135,6 +144,7 @@ func Page(params map[string]interface{}) ([]Boleto, string, Error.StarkErrors) {
 }
 
 func Cancel(id string) (Boleto, Error.StarkErrors) {
+	var boleto Boleto
 	cancel, err := rest.DeleteId(
 		utils.SdkVersion,
 		hosts.Bank,

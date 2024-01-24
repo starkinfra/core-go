@@ -20,9 +20,6 @@ type Log struct {
 	Created *time.Time    `json:",omitempty"`
 }
 
-var log Log
-var logs []Log
-
 type BoletoHolmes struct {
 	BoletoId string     `json:",omitempty"`
 	Tags     string     `json:",omitempty"`
@@ -42,6 +39,7 @@ type HolmesLog struct {
 }
 
 func Get(id string) (Log, Error.StarkErrors) {
+	var log Log
 	get, err := rest.GetId(
 		utils.SdkVersion,
 		hosts.Bank,
@@ -63,9 +61,11 @@ func Get(id string) (Log, Error.StarkErrors) {
 	return log, err
 }
 
-func Query(params map[string]interface{}) chan Log {
+func Query(params map[string]interface{}) (chan Log, chan Error.StarkErrors) {
+	var log Log
 	b := make(chan Log)
-	c := rest.GetStream(
+	erroChannel := make(chan Error.StarkErrors)
+	c, err := rest.GetStream(
 		utils.SdkVersion,
 		hosts.Bank,
 		utils.ApiVersion,
@@ -75,21 +75,27 @@ func Query(params map[string]interface{}) chan Log {
 		utils.ResourceBoletoLog,
 		params,
 	)
-	go func() {
-		for were := range c {
-			wereByte, _ := json.Marshal(were)
-			err := json.Unmarshal(wereByte, &log)
-			if err != nil {
-				print(err)
+	go func(){
+		for {
+			select{
+				case errors := <- err:
+					erroChannel <- errors
+					return 
+				case value := <- c:
+					wereByte, _ := json.Marshal(value)
+					err := json.Unmarshal(wereByte, &log)
+					if err != nil {
+						print(err)
+					}
+					b <- log
 			}
-			b <- log
 		}
-		close(b)
 	}()
-	return b
+	return b, erroChannel
 }
 
 func Page(params map[string]interface{}) ([]Log, string, Error.StarkErrors) {
+	var logs []Log
 	page, cursor, err := rest.GetPage(
 		utils.SdkVersion,
 		hosts.Bank,
