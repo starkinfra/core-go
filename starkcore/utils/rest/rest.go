@@ -143,8 +143,7 @@ func GetContent(sdkVersion string, host string, apiVersion string, language stri
 	if err.Errors != nil {
 		return nil, err
 	}
-	content, _ := json.Marshal(response.Content)
-	return content, err
+	return response.Content, err
 }
 
 func GetSubResource(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, id string, subResourceName map[string]string, query map[string]interface{}) ([]byte, Error.StarkErrors) {

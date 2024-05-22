@@ -13,6 +13,8 @@ Given a version number MAJOR.MINOR.PATCH, increment:
 
 
 ## [Unreleased]
+### Fixed
+- GetContent return data
 
 ## [0.2.1] - 2023-09-13
 ### Fixed
