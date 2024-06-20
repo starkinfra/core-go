@@ -40,8 +40,9 @@ func GetPage(sdkVersion string, host string, apiVersion string, language string,
 	return jsonBytes, cursor.(string), err
 }
 
-func GetStream(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, query map[string]interface{}) chan map[string]interface{} {
+func GetStream(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, query map[string]interface{}) (chan map[string]interface{}, chan Error.StarkErrors) {
 	channel := make(chan map[string]interface{})
+	errorChannel := make(chan Error.StarkErrors)
 	isNilCursor := false
 	var response []map[string]interface{}
 	newResponse := make([]map[string]interface{}, len(response))
@@ -60,6 +61,7 @@ func GetStream(sdkVersion string, host string, apiVersion string, language strin
 
 	go func() {
 		defer close(channel)
+		defer close(errorChannel)
 		for _ = 0; (limitQuery["limit"] == nil || limit > 0) && !isNilCursor; {
 			entities, cursor, err := GetPage(
 				sdkVersion,
@@ -72,29 +74,29 @@ func GetStream(sdkVersion string, host string, apiVersion string, language strin
 				limitQuery,
 			)
 			if err.Errors != nil {
-				for _, e := range err.Errors {
-					panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+				errorChannel <- err
+			} 
+			if err.Errors == nil {
+				copy(newResponse, response)
+				unmarshalErr := json.Unmarshal(entities, &newResponse)
+				if unmarshalErr != nil {
+					panic(unmarshalErr)
 				}
-			}
-			copy(newResponse, response)
-			unmarshalErr := json.Unmarshal(entities, &newResponse)
-			if unmarshalErr != nil {
-				panic(unmarshalErr)
-			}
-			for _, data := range newResponse {
-				channel <- data
-			}
-			if limit != 0 {
-				limit -= 100
-				limitQuery["limit"] = int(math.Min(float64(limit), 100))
-			}
-			limitQuery["cursor"] = cursor
-			if cursor == "" {
-				isNilCursor = true
+				for _, data := range newResponse {
+					channel <- data
+				}
+				if limit != 0 {
+					limit -= 100
+					limitQuery["limit"] = int(math.Min(float64(limit), 100))
+				}
+				limitQuery["cursor"] = cursor
+				if cursor == "" {
+					isNilCursor = true
+				}
 			}
 		}
 	}()
-	return channel
+	return channel, errorChannel
 }
 
 func GetId(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, id string, query map[string]interface{}) ([]byte, Error.StarkErrors) {
