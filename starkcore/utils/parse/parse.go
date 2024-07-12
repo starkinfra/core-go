@@ -72,6 +72,8 @@ func isSignatureValid(content string, signature Signature.Signature, publicKey p
 
 func getPublicKey(sdkVersion, host, apiVersion string, language string, timeout int, user user.User, refresh bool) interface{} {
 	mapPem := make(map[string]interface{})
+	data := map[string]interface{}{}
+
 	publicKey := cache.Cache["stark-public-key"]
 	if publicKey != nil && refresh == false {
 		return publicKey
@@ -86,14 +88,22 @@ func getPublicKey(sdkVersion, host, apiVersion string, language string, timeout 
 		"/public-key",
 		user,
 		nil,
+		"",
+		true,
 	)
 	if err.Errors != nil {
 		for _, e := range err.Errors {
 			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
 		}
 	}
-	json.Unmarshal([]byte(fmt.Sprintf("%v", pem["cursor"])), &mapPem)
-	content := fmt.Sprintf("%v", pem["publicKeys"].([]interface{})[0].(map[string]interface{})["content"])
+
+	unmarshalError := json.Unmarshal(pem.Content, &data)
+	if unmarshalError != nil {
+		panic(unmarshalError)
+	}
+
+	json.Unmarshal([]byte(fmt.Sprintf("%v", data["cursor"])), &mapPem)
+	content := fmt.Sprintf("%v", data["publicKeys"].([]interface{})[0].(map[string]interface{})["content"])
 	publicKey = publickey.FromPem(content)
 	cache.Cache["stark-public-key"] = publicKey
 	return publicKey
