@@ -134,6 +134,8 @@ func TestSuccessGetRaw(t *testing.T) {
 		"public-key",
 		User.ExampleProjectBank,
 		nil,
+		"",
+		false,
 	)
 	if err.Errors != nil {
 		for _, e := range err.Errors {

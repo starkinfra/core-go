@@ -22,7 +22,7 @@ type Response struct {
 	Content []byte
 }
 
-func Fetch(host string, sdkVersion string, user user.User, method string, path string, payload interface{}, apiVersion string, language string, timeout int, query map[string]interface{}) (Response, Error.StarkErrors) {
+func Fetch(host string, sdkVersion string, user user.User, method string, path string, payload interface{}, apiVersion string, language string, timeout int, query map[string]interface{}, prefix string, throwError bool) (Response, Error.StarkErrors) {
 	var url string
 	var body string
 	language = checks.CheckLanguage(language)
@@ -40,9 +40,11 @@ func Fetch(host string, sdkVersion string, user user.User, method string, path s
 	}
 
 	url = fmt.Sprintf("%v/%v%v", url, path, Url.UrlEncode(query))
-	agent := fmt.Sprintf("Go-SDK-%v-%v", host, sdkVersion)
 	client := http.Client{Timeout: time.Duration(timeout) * time.Second}
-
+	agent := fmt.Sprintf("Go-SDK-%v-%v", host, sdkVersion)
+	if prefix != "" {
+		agent = fmt.Sprintf("%v-Go-SDK-%v-%v", prefix, host, sdkVersion)
+	}
 	req, err := http.NewRequest(method, url, strings.NewReader(body))
 	if err != nil {
 		panic(err)
@@ -65,17 +67,19 @@ func Fetch(host string, sdkVersion string, user user.User, method string, path s
 
 	response := Response{Status: rawResponse.StatusCode, Content: responseContent}
 
-	if response.Status == 400 {
-		err := Error.InputError(string(response.Content))
-		return Response{}, err
-	}
-	if response.Status == 500 {
-		err := Error.InternalServerError()
-		return Response{}, err
-	}
-	if response.Status != 200 {
-		err := Error.UnknownError(string(response.Content))
-		return Response{}, err
+	if throwError != false {
+		if response.Status == 400 {
+			err := Error.InputError(string(response.Content))
+			return Response{}, err
+		}
+		if response.Status == 500 {
+			err := Error.InternalServerError()
+			return Response{}, err
+		}
+		if response.Status != 200 {
+			err := Error.UnknownError(string(response.Content))
+			return Response{}, err
+		}
 	}
 	return response, Error.StarkErrors{}
 }

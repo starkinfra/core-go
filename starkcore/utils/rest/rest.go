@@ -24,6 +24,8 @@ func GetPage(sdkVersion string, host string, apiVersion string, language string,
 		language,
 		timeout,
 		query,
+		"",
+		true,
 	)
 	if err.Errors != nil {
 		return nil, "", err
@@ -110,6 +112,8 @@ func GetId(sdkVersion string, host string, apiVersion string, language string, t
 		language,
 		timeout,
 		query,
+		"",
+		true,
 	)
 	if err.Errors != nil {
 		return nil, err
@@ -139,6 +143,8 @@ func GetContent(sdkVersion string, host string, apiVersion string, language stri
 		language,
 		timeout,
 		query,
+		"",
+		true,
 	)
 	if err.Errors != nil {
 		return nil, err
@@ -164,6 +170,8 @@ func GetSubResource(sdkVersion string, host string, apiVersion string, language 
 		language,
 		timeout,
 		query,
+		"",
+		true,
 	)
 	if err.Errors != nil {
 		return nil, err
@@ -188,6 +196,8 @@ func PostMulti(sdkVersion string, host string, apiVersion string, language strin
 		language,
 		timeout,
 		query,
+		"",
+		true,
 	)
 	if err.Errors != nil {
 		return nil, err
@@ -208,6 +218,8 @@ func PostSingle(sdkVersion string, host string, apiVersion string, language stri
 		language,
 		timeout,
 		query,
+		"",
+		true,
 	)
 	if err.Errors != nil {
 		return nil, err
@@ -238,6 +250,8 @@ func PostSubResource(sdkVersion string, host string, apiVersion string, user use
 		language,
 		timeout,
 		nil,
+		"",
+		true,
 	)
 	if err.Errors != nil {
 		return nil, err
@@ -263,6 +277,8 @@ func DeleteId(sdkVersion string, host string, apiVersion string, language string
 		language,
 		timeout,
 		query,
+		"",
+		true,
 	)
 	if err.Errors != nil {
 		return nil, err
@@ -288,6 +304,8 @@ func PatchId(sdkVersion string, host string, apiVersion string, language string,
 		language,
 		timeout,
 		query,
+		"",
+		true,
 	)
 	if err.Errors != nil {
 		return nil, err
@@ -300,8 +318,7 @@ func PatchId(sdkVersion string, host string, apiVersion string, language string,
 	return jsonBytes, err
 }
 
-func GetRaw(sdkVersion string, host string, apiVersion string, language string, timeout int, path string, user user.User, query map[string]interface{}) (map[string]interface{}, Error.StarkErrors) {
-	data := map[string]interface{}{}
+func GetRaw(sdkVersion string, host string, apiVersion string, language string, timeout int, path string, user user.User, query map[string]interface{}, prefix string, throwError bool) (request.Response, Error.StarkErrors) {
 	response, err := request.Fetch(
 		host,
 		sdkVersion,
@@ -313,19 +330,16 @@ func GetRaw(sdkVersion string, host string, apiVersion string, language string, 
 		language,
 		timeout,
 		query,
+		prefix,
+		false,
 	)
 	if err.Errors != nil {
-		return nil, err
+		return response, err
 	}
-	unmarshalError := json.Unmarshal(response.Content, &data)
-	if unmarshalError != nil {
-		panic(unmarshalError)
-	}
-	return data, err
+	return response, err
 }
 
-func PostRaw(sdkVersion string, host string, apiVersion string, language string, timeout int, path string, payload interface{}, user user.User, query map[string]interface{}) (map[string]interface{}, Error.StarkErrors) {
-	data := map[string]interface{}{}
+func PostRaw(sdkVersion string, host string, apiVersion string, language string, timeout int, path string, payload interface{}, user user.User, query map[string]interface{}, prefix string, throwError bool) (request.Response, Error.StarkErrors) {
 	response, err := request.Fetch(
 		host,
 		sdkVersion,
@@ -337,13 +351,74 @@ func PostRaw(sdkVersion string, host string, apiVersion string, language string,
 		language,
 		timeout,
 		query,
+		prefix,
+		false,
 	)
 	if err.Errors != nil {
-		return nil, err
+		return response, err
 	}
-	unmarshalError := json.Unmarshal(response.Content, &data)
-	if unmarshalError != nil {
-		panic(unmarshalError)
+	return response, err
+}
+
+func PatchRaw(sdkVersion string, host string, apiVersion string, language string, timeout int, path string, payload interface{}, user user.User, query map[string]interface{}, prefix string, throwError bool) (request.Response, Error.StarkErrors) {
+	response, err := request.Fetch(
+		host,
+		sdkVersion,
+		user,
+		"PATCH",
+		path,
+		payload,
+		apiVersion,
+		language,
+		timeout,
+		query,
+		prefix,
+		false,
+	)
+	if err.Errors != nil {
+		return response, err
 	}
-	return data, err
+	return response, err
+}
+
+func PutRaw(sdkVersion string, host string, apiVersion string, language string, timeout int, path string, payload interface{}, user user.User, query map[string]interface{}, prefix string, throwError bool) (request.Response, Error.StarkErrors) {
+	response, err := request.Fetch(
+		host,
+		sdkVersion,
+		user,
+		"PUT",
+		path,
+		payload,
+		apiVersion,
+		language,
+		timeout,
+		query,
+		prefix,
+		false,
+	)
+	if err.Errors != nil {
+		return response, err
+	}
+	return response, err
+}
+
+func DeleteRaw(sdkVersion string, host string, apiVersion string, language string, timeout int, path string, user user.User, prefix string, throwError bool) (request.Response, Error.StarkErrors) {
+	response, err := request.Fetch(
+		host,
+		sdkVersion,
+		user,
+		"DELETE",
+		path,
+		nil,
+		apiVersion,
+		language,
+		timeout,
+		nil,
+		prefix,
+		false,
+	)
+	if err.Errors != nil {
+		return response, err
+	}
+	return response, err
 }
