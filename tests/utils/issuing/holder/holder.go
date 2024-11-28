@@ -56,10 +56,10 @@ type CardMethod struct {
 	Number string `json:",omitempty"`
 }
 
-var objects []IssuingHolder
 var resourceIssuingHolder = map[string]string{"name": "IssuingHolder"}
 
 func Create(holders []IssuingHolder, expand map[string]interface{}) ([]IssuingHolder, Error.StarkErrors) {
+	var objects []IssuingHolder
 	create, err := rest.PostMulti(
 		utils.SdkVersion,
 		hosts.Infra,

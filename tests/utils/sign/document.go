@@ -31,10 +31,10 @@ type Document struct {
 	Signatures []signature.Signature `json:",omitempty"`
 }
 
-var object Document
 var resourceDocument = map[string]string{"name": "Document"}
 
 func Get(id string) (Document, Error.StarkErrors) {
+	var object Document
 	get, err := rest.GetId(
 		utils.SdkVersion,
 		hosts.Sign,
