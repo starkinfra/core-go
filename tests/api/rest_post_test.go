@@ -2,11 +2,11 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/starkinfra/core-go/starkcore/utils/hosts"
 	"github.com/starkinfra/core-go/starkcore/utils/rest"
 	"github.com/starkinfra/core-go/tests/utils"
 	Boleto "github.com/starkinfra/core-go/tests/utils/boleto"
+	"github.com/starkinfra/core-go/tests/utils/examples"
 	User "github.com/starkinfra/core-go/tests/utils/user"
 	"math/rand"
 	"testing"
@@ -56,15 +56,38 @@ func TestSuccessPostMulti(t *testing.T) {
 	)
 	if err.Errors != nil {
 		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+			t.Errorf("code: %s, message: %s", e.Code, e.Message)
 		}
 	}
 	unmarshalError := json.Unmarshal(create, &boletos)
 	if unmarshalError != nil {
-		fmt.Println(unmarshalError)
+		t.Errorf("unmarshalError: %s", unmarshalError)
 	}
 
 	for _, boleto := range boletos {
-		fmt.Println(boleto)
+		if boleto.Id == "" {
+			t.Errorf("boleto.Id is empty")
+		}
 	}
+}
+
+func TestFailPostMulti(t *testing.T) {
+	object := examples.ExampleBoleto()
+	object[0].Amount = 0
+
+	_, err := rest.PostMulti(
+		utils.SdkVersion,
+		hosts.Bank,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
+		User.ExampleProjectBank,
+		utils.ResourceBoleto,
+		object,
+		nil,
+	)
+	if err.Errors != nil {
+		return
+	}
+	t.Errorf("Test failed")
 }

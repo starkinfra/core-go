@@ -2,23 +2,70 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/starkinfra/core-go/starkcore/utils/hosts"
 	"github.com/starkinfra/core-go/starkcore/utils/rest"
 	"github.com/starkinfra/core-go/tests/utils"
 	Boleto "github.com/starkinfra/core-go/tests/utils/boleto"
 	User "github.com/starkinfra/core-go/tests/utils/user"
-	"math/rand"
+	"github.com/starkinfra/core-go/tests/utils/examples"
 	"testing"
 )
 
-func TestSuccessDel(t *testing.T) {
+func TestSuccessDelete(t *testing.T) {
 	var boleto Boleto.Boleto
+	var newBoleto []Boleto.Boleto
 
-	var params = map[string]interface{}{}
-	params["limit"] = rand.Intn(100)
+	object := examples.ExampleBoleto()
+	create, err := rest.PostMulti(
+		utils.SdkVersion,
+		hosts.Bank,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
+		User.ExampleProjectBank,
+		utils.ResourceBoleto,
+		object,
+		nil,
+	)
+	if err.Errors != nil {
+		for _, e := range err.Errors {
+			t.Errorf("code: %s, message: %s", e.Code, e.Message)
+		}
+	}
+	unmarshalError := json.Unmarshal(create, &newBoleto)
+	if unmarshalError != nil {
+		t.Errorf("unmarshalError: %s", unmarshalError)
+	}
+
+	var id string
+	for _, boleto := range newBoleto {
+		id = boleto.Id
+	}
 
 	deleted, err := rest.DeleteId(
+		utils.SdkVersion,
+		hosts.Bank,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
+		User.ExampleProjectBank,
+		utils.ResourceBoleto,
+		id,
+		nil,
+	)
+	if err.Errors != nil {
+		for _, e := range err.Errors {
+			t.Errorf("code: %s, message: %s", e.Code, e.Message)
+		}
+	}
+	unmarshalError = json.Unmarshal(deleted, &boleto)
+	if unmarshalError != nil {
+		t.Errorf("unmarshalError: %s", unmarshalError)
+	}
+}
+
+func TestFailDelete(t *testing.T) {
+	_, err := rest.DeleteId(
 		utils.SdkVersion,
 		hosts.Bank,
 		utils.ApiVersion,
@@ -30,15 +77,10 @@ func TestSuccessDel(t *testing.T) {
 		nil,
 	)
 	if err.Errors != nil {
-		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+		if err.Errors[0].Code != "invalidBoleto" {
+			t.Errorf("err.Errors: %+v\n", err.Errors)
 		}
+		return
 	}
-	unmarshalError := json.Unmarshal(deleted, &boleto)
-	if unmarshalError != nil {
-		fmt.Println(unmarshalError)
-	}
-
-	fmt.Println("id: ", boleto.Id)
-
+	t.Errorf("Test failed")
 }

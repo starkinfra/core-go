@@ -10,27 +10,31 @@ import (
 	"github.com/starkinfra/core-go/starkcore/user/user"
 	"github.com/starkinfra/core-go/starkcore/utils/cache"
 	"github.com/starkinfra/core-go/starkcore/utils/rest"
+	Error "github.com/starkinfra/core-go/starkcore/error"
 )
 
-func ParseAndVerify(content string, signature string, sdkVersion string, apiVersion string, language string, timeout int, host string, user user.User, key string) interface{} {
+func ParseAndVerify(content string, signature string, sdkVersion string, apiVersion string, language string, timeout int, host string, user user.User, key string) (interface{}, Error.StarkErrors) {
 	jsonParse := map[string]interface{}{}
-	verifiedContent := Verify(content, signature, sdkVersion, apiVersion, language, timeout, host, user)
+	verifiedContent, err := Verify(content, signature, sdkVersion, apiVersion, language, timeout, host, user)
+	if err.Errors != nil {
+		return nil, err
+	}
 	if key != "" {
 		for _, value := range jsonParse {
 			jsonParse[key] = value
 		}
 	}
-	return verifiedContent
+	return verifiedContent, Error.StarkErrors{}
 }
 
-func Verify(content string, signature string, sdkVersion string, apiVersion string, language string, timeout int, host string, user user.User) interface{} {
+func Verify(content string, signature string, sdkVersion string, apiVersion string, language string, timeout int, host string, user user.User) (interface{}, Error.StarkErrors) {
 	var public publickey.PublicKey
 	signatureFromBase64 := Signature.FromBase64(signature)
 	if signatureFromBase64.ToBase64() == "" {
-		panic(fmt.Sprintf("%v", error.InvalidSignatureError("The provided signature is not valid")))
+		return nil, error.InvalidSignatureError("The provided signature is not valid")
 	}
 
-	publicKey := getPublicKey(
+	publicKey, err := getPublicKey(
 		sdkVersion,
 		host,
 		apiVersion,
@@ -39,13 +43,16 @@ func Verify(content string, signature string, sdkVersion string, apiVersion stri
 		user,
 		false,
 	)
+	if err.Errors != nil {
+		return nil, err
+	}
 	public = publicKey.(publickey.PublicKey)
 
-	if isSignatureValid(content, signatureFromBase64, public) == true {
-		return content
+	if isSignatureValid(content, signatureFromBase64, public) {
+		return content, Error.StarkErrors{}
 	}
 
-	publicKey = getPublicKey(
+	publicKey, err = getPublicKey(
 		sdkVersion,
 		host,
 		apiVersion,
@@ -56,11 +63,11 @@ func Verify(content string, signature string, sdkVersion string, apiVersion stri
 	)
 	public = publicKey.(publickey.PublicKey)
 
-	if isSignatureValid(content, signatureFromBase64, public) == true {
-		return content
+	if isSignatureValid(content, signatureFromBase64, public) {
+		return content, Error.StarkErrors{}
 	}
 
-	panic(fmt.Sprintf("%v", error.InvalidSignatureError("The provided signature and content do not match the public key")))
+	return nil, error.InvalidSignatureError("The provided signature and content do not match the public key")
 }
 
 func isSignatureValid(content string, signature Signature.Signature, publicKey publickey.PublicKey) bool {
@@ -70,13 +77,13 @@ func isSignatureValid(content string, signature Signature.Signature, publicKey p
 	return false
 }
 
-func getPublicKey(sdkVersion, host, apiVersion string, language string, timeout int, user user.User, refresh bool) interface{} {
+func getPublicKey(sdkVersion, host, apiVersion string, language string, timeout int, user user.User, refresh bool) (interface{}, Error.StarkErrors) {
 	mapPem := make(map[string]interface{})
 	data := map[string]interface{}{}
 
 	publicKey := cache.Cache["stark-public-key"]
 	if publicKey != nil && refresh == false {
-		return publicKey
+		return publicKey, Error.StarkErrors{}
 	}
 
 	pem, err := rest.GetRaw(
@@ -92,19 +99,17 @@ func getPublicKey(sdkVersion, host, apiVersion string, language string, timeout 
 		true,
 	)
 	if err.Errors != nil {
-		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
-		}
+		return nil, err
 	}
 
 	unmarshalError := json.Unmarshal(pem.Content, &data)
 	if unmarshalError != nil {
-		panic(unmarshalError)
+		return nil, Error.InputError(string(pem.Content))
 	}
 
 	json.Unmarshal([]byte(fmt.Sprintf("%v", data["cursor"])), &mapPem)
 	content := fmt.Sprintf("%v", data["publicKeys"].([]interface{})[0].(map[string]interface{})["content"])
 	publicKey = publickey.FromPem(content)
 	cache.Cache["stark-public-key"] = publicKey
-	return publicKey
+	return publicKey, Error.StarkErrors{}
 }

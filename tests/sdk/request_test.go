@@ -2,11 +2,9 @@ package sdk
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
-	"strconv"
-	"time"
 	"github.com/starkinfra/core-go/starkcore/utils/rest"
+	"github.com/starkinfra/core-go/tests/utils/examples"
 	User "github.com/starkinfra/core-go/tests/utils/user"
 	"github.com/stretchr/testify/assert"
 )
@@ -26,31 +24,22 @@ func TestRawGet(t *testing.T) {
 		User.ExampleProjectBank,
 		params,
 		"Joker",
-		false,
+		true,
 	)
 	if err.Errors != nil {
 		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+			t.Errorf("code: %s, message: %s", e.Code, e.Message)
 		}
 	}
 	unmarshalError := json.Unmarshal(response.Content, &data)
 	if unmarshalError != nil {
-		panic(unmarshalError)
+		t.Errorf("unmarshalError: %s", unmarshalError)
 	}
-	fmt.Println(data)
 	assert.NotNil(t, data)
 }
 
 func TestRawPost(t *testing.T) {
-	body := map[string][]map[string]interface{}{
-		"invoices": {
-			{
-				"amount": 996699999,
-				"name":   "Tony Stark",
-				"taxId":  "38.446.231/0001-04",
-			},
-		},
-	}
+	body := examples.ExampleInvoice()
 
 	data := map[string]interface{}{}
 
@@ -65,16 +54,16 @@ func TestRawPost(t *testing.T) {
 		User.ExampleProjectBank,
 		nil,
 		"Joker",
-		false,
+		true,
 	)
 	if err.Errors != nil {
 		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+			t.Errorf("code: %s, message: %s", e.Code, e.Message)
 		}
 	}
 	unmarshalError := json.Unmarshal(response.Content, &data)
 	if unmarshalError != nil {
-		panic(unmarshalError)
+		t.Errorf("unmarshalError: %s", unmarshalError)
 	}
 	assert.NotNil(t, data)
 }
@@ -94,21 +83,21 @@ func TestRawPatch(t *testing.T) {
 		User.ExampleProjectBank,
 		params,
 		"",
-		false,
+		true,
 	)
 
 	if err.Errors != nil {
 		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+			t.Errorf("code: %s, message: %s", e.Code, e.Message)
 		}
 	}
 	unmarshalError := json.Unmarshal(response.Content, &data)
 	if unmarshalError != nil {
-		panic(unmarshalError)
+		t.Errorf("unmarshalError: %s", unmarshalError)
 	}
-	invoicesData, ok1 := data["invoices"].([]interface{})
-	if !ok1 {
-		fmt.Println("Erro ao converter os tipos content")
+	invoicesData, conversionError := data["invoices"].([]interface{})
+	if !conversionError {
+		t.Errorf("Erro ao converter os tipos content")
 		return
 	}
 	for _, invoice := range invoicesData {
@@ -133,17 +122,17 @@ func TestRawPatch(t *testing.T) {
 			User.ExampleProjectBank,
 			nil,
 			"Joker",
-			false,
+			true,
 		)
 
 		if err.Errors != nil {
 			for _, e := range err.Errors {
-				panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+				t.Errorf("code: %s, message: %s", e.Code, e.Message)
 			}
 		}
 		unmarshalError := json.Unmarshal(response.Content, &data)
 		if unmarshalError != nil {
-			panic(unmarshalError)
+			t.Errorf("unmarshalError: %s", unmarshalError)
 		}
 		invoiceData, _ := data["invoice"].(map[string]interface{})
 		amount, _ := invoiceData["amount"].(int)
@@ -174,16 +163,16 @@ func TestRawPut(t *testing.T) {
 		User.ExampleProjectBank,
 		nil,
 		"Joker",
-		false,
+		true,
 	)
 	if err.Errors != nil {
 		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+			t.Errorf("code: %s, message: %s", e.Code, e.Message)
 		}
 	}
 	unmarshalError := json.Unmarshal(response.Content, &data)
 	if unmarshalError != nil {
-		panic(unmarshalError)
+		t.Errorf("unmarshalError: %s", unmarshalError)
 	}
 	assert.NotNil(t, data)
 }
@@ -191,26 +180,7 @@ func TestRawPut(t *testing.T) {
 func TestRequestDelete(t *testing.T) {
 	data := map[string]interface{}{}
 
-	now := time.Now()
-	futureDate := now.AddDate(0, 0, 10).Format("2006-01-02")
-	milliseconds := now.UnixNano() / int64(time.Millisecond)
-	timestamp := strconv.FormatInt(milliseconds, 10)
-
-	body := map[string][]map[string]interface{}{
-		"transfers": {
-			{
-				"amount":        10000,
-				"name":          "Steve Rogers",
-				"taxId":         "330.731.970-10",
-				"bankCode":      "001",
-				"branchCode":    "1234",
-				"accountNumber": "123456-0",
-				"accountType":   "checking",
-				"scheduled":     futureDate,
-				"externalId":    timestamp,
-			},
-		},
-	}
+	body := examples.ExampleTransferBody()
 
 	path := "transfer/"
 	response, err := rest.PostRaw(
@@ -224,32 +194,33 @@ func TestRequestDelete(t *testing.T) {
 		User.ExampleProjectBank,
 		nil,
 		"Joker",
-		false,
+		true,
 	)
 
 	if err.Errors != nil {
 		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+			t.Errorf("code: %s, message: %s", e.Code, e.Message)
 		}
 	}
 	unmarshalError := json.Unmarshal(response.Content, &data)
 	if unmarshalError != nil {
-		panic(unmarshalError)
+		t.Errorf("unmarshalError: %s", unmarshalError)
 	}
-	transfersData, ok1 := data["transfers"].([]interface{})
-	if !ok1 {
-		fmt.Println("Erro ao converter os tipos content")
+
+	transfersData, conversionError := data["transfers"].([]interface{})
+	if !conversionError {
+		t.Errorf("Erro ao converter os tipos content")
 		return
 	}
 	for _, transfer := range transfersData {
-		transferMap, ok2 := transfer.(map[string]interface{})
-		if !ok2 {
-			fmt.Println("Erro ao converter item de list 'invoices' para map[string]interface{}")
+		transferMap, conversionError := transfer.(map[string]interface{})
+		if !conversionError {
+			t.Errorf("Erro ao converter item de list 'invoices' para map[string]interface{}")
 			continue
 		}
-		id, ok3 := transferMap["id"].(string)
-		if !ok3 {
-			fmt.Println("Erro ao converter list 'id' para string")
+		id, conversionError := transferMap["id"].(string)
+		if !conversionError {
+			t.Errorf("Erro ao converter list 'id' para string")
 			continue
 		}
 		path = "transfer/" + id
@@ -265,17 +236,17 @@ func TestRequestDelete(t *testing.T) {
 			path,
 			User.ExampleProjectBank,
 			"",
-			false,
+			true,
 		)
 
 		if err.Errors != nil {
 			for _, e := range err.Errors {
-				panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+				t.Errorf("code: %s, message: %s", e.Code, e.Message)
 			}
 		}
 		unmarshalError := json.Unmarshal(response.Content, &data)
 		if unmarshalError != nil {
-			panic(unmarshalError)
+			t.Errorf("unmarshalError: %s", unmarshalError)
 		}
 		assert.NotNil(t, data)
 	}

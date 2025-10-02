@@ -9,32 +9,45 @@ import (
 	Invoice "github.com/starkinfra/core-go/tests/utils/invoice"
 	"github.com/starkinfra/core-go/tests/utils/issuing/product"
 	"github.com/starkinfra/core-go/tests/utils/sign"
-	User "github.com/starkinfra/core-go/tests/utils/user"
-	"io/ioutil"
-	"math/rand"
+	"github.com/starkinfra/core-go/tests/utils/examples"
+	"os"
 	"testing"
 )
 
-func TestBoletoGet(t *testing.T) {
-	var params = map[string]interface{}{}
-	params["limit"] = rand.Intn(100)
+func TestBoletoCreateAndGet(t *testing.T) {
+	createdBoleto, err := Boleto.Create(examples.ExampleBoleto())
+	if err.Errors != nil {
+		t.Errorf("err: %s", err.Errors)
+	}
 
-	boleto, err := Boleto.Get("4537841761648640")
+	_, err = Boleto.Get(createdBoleto[0].Id)
 	if err.Errors != nil {
 		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+			t.Errorf("code: %s, message: %s", e.Code, e.Message)
 		}
 	}
-	fmt.Println(boleto.Id)
 }
 
 func TestBoletoQuery(t *testing.T) {
 	var params = map[string]interface{}{}
 	params["limit"] = 200
 
-	boletos := Boleto.Query(params)
+	boletos, err := Boleto.Query(params)
+
+	go func() {
+		for err := range err {
+			if err.Errors != nil {
+				for _, e := range err.Errors {
+					t.Errorf("code: %s, message: %s", e.Code, e.Message)
+				}
+			}
+		}
+	}()
+
 	for boleto := range boletos {
-		fmt.Println("id:", boleto.Id)
+		if boleto.Id == "" {
+			t.Errorf("boleto.Id is empty")
+		}
 	}
 }
 
@@ -42,39 +55,49 @@ func TestBoletoPage(t *testing.T) {
 	var params = map[string]interface{}{}
 	params["limit"] = 100
 
-	boletos, cursor, err := Boleto.Page(params)
+	boletos, _, err := Boleto.Page(params)
 	if err.Errors != nil {
 		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+			t.Errorf("code: %s, message: %s", e.Code, e.Message)
 		}
 	}
 	for _, boleto := range boletos {
-		fmt.Println(boleto.Id)
-	}
-	fmt.Println(cursor)
-}
-
-func TestBoletoLogGet(t *testing.T) {
-	var params = map[string]interface{}{}
-	params["limit"] = rand.Intn(100)
-
-	boleto, err := Log.Get("4537841761648640")
-	if err.Errors != nil {
-		for _, err := range err.Errors {
-			panic(err)
+		if boleto.Id == "" {
+			t.Errorf("boleto.Id is empty")
 		}
 	}
-	fmt.Println(boleto)
+}
+
+func TestCreateBoletoAndLogGet(t *testing.T) {
+	var params = map[string]interface{}{}
+	params["limit"] = 1
+
+	_, err := Boleto.Create(examples.ExampleBoleto())
+
+	if err.Errors != nil {
+		t.Errorf("err: %s", err.Errors)
+	}
+
+	boletoLogs, _, err := Log.Page(params)
+
+	boletoLogId := boletoLogs[0].Id
+
+	_, err = Log.Get(boletoLogId)
+
+	if err.Errors != nil {
+		for _, err := range err.Errors {
+			t.Errorf("code: %s, message: %s", err.Code, err.Message)
+		}
+	}
 }
 
 func TestDocumentGet(t *testing.T) {
-	document, err := sign.Get("52e2ab8389dd4fa5856b095ce6a9b125")
+	_, err := sign.Get("52e2ab8389dd4fa5856b095ce6a9b125")
 	if err.Errors != nil {
 		for _, err := range err.Errors {
 			panic(err)
 		}
 	}
-	fmt.Println(document)
 }
 
 func TestBoletoLogQuery(t *testing.T) {
@@ -82,19 +105,45 @@ func TestBoletoLogQuery(t *testing.T) {
 	params["limit"] = 300
 	params["after"] = "2022-11-16"
 
-	boletos := Log.Query(nil)
+	boletos, err := Log.Query(params)
+
+	go func() {
+		for err := range err {
+			if err.Errors != nil {
+				for _, e := range err.Errors {
+					t.Errorf("code: %s, message: %s", e.Code, e.Message)
+				}
+			}
+		}
+	}()
 
 	for boleto := range boletos {
-		fmt.Println("i, boleto", boleto.Id)
+		if boleto.Id == "" {
+			t.Errorf("boleto.Id is empty")
+		}
 	}
 }
 
 func TestProductLogQuery(t *testing.T) {
+	var params = map[string]interface{}{}
+	params["limit"] = 100
 
-	products := product.Query(nil)
+	products, err := product.Query(params)
+
+	go func() {
+		for err := range err {
+			if err.Errors != nil {
+				for _, e := range err.Errors {
+					t.Errorf("code: %s, message: %s", e.Code, e.Message)
+				}
+			}
+		}
+	}()
 
 	for product := range products {
-		fmt.Println("i: product", product.Id)
+		if product.Id == "" {
+			t.Errorf("product.Id is empty")
+		}
 	}
 }
 
@@ -103,75 +152,90 @@ func TestBoletoLogPage(t *testing.T) {
 	params["limit"] = 100
 	params["after"] = "2022-11-16"
 
-	boletos, cursor, err := Log.Page(params)
+	boletos, _, err := Log.Page(params)
 	if err.Errors != nil {
 		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+			t.Errorf("code: %s, message: %s", e.Code, e.Message)
 		}
 	}
 	for _, boleto := range boletos {
-		fmt.Println(boleto)
-	}
-	fmt.Println(cursor)
-}
-
-func TestPaymentGet(t *testing.T) {
-	var params = map[string]interface{}{}
-	params["limit"] = rand.Intn(100)
-
-	payment, err := Invoice.GetPayment("6543381610102784")
-	if err.Errors != nil {
-		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+		if boleto.Id == "" {
+			t.Errorf("boleto.Id is empty")
 		}
 	}
-	fmt.Println(payment)
+}
+
+func TestInvoicePageAndGetPayment(t *testing.T) {
+	var params = map[string]interface{}{}
+	params["status"] = "paid"
+	params["limit"] = 1
+
+	payments, _, err := Invoice.Page(params)
+	if err.Errors != nil {
+		for _, e := range err.Errors {
+			t.Errorf("code: %s, message: %s", e.Code, e.Message)
+		}
+	}
+
+	payment, err := Invoice.GetPayment(payments[0].Id)
+	if err.Errors != nil {
+		for _, e := range err.Errors {
+			t.Errorf("code: %s, message: %s", e.Code, e.Message)
+		}
+	}
+	if payment.EndToEndId == "" {
+		t.Errorf("payment.Id is empty")
+	}
 }
 
 func TestInvoiceGetPdf(t *testing.T) {
 	var params = map[string]interface{}{}
-	params["limit"] = rand.Intn(100)
+	params["limit"] = 1
 
-	invoice, err := Invoice.Pdf("6543381610102784")
+	invoices, _, err := Invoice.Page(params)
 	if err.Errors != nil {
 		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+			t.Errorf("code: %s, message: %s", e.Code, e.Message)
 		}
 	}
-	filename := fmt.Sprintf("%v%v.pdf", api.Endpoint(Invoice.ResourceInvoice), "5767877416189952")
-	createFileError := ioutil.WriteFile(filename, invoice, 0666)
+
+	invoice, err := Invoice.Pdf(invoices[0].Id)
+	if err.Errors != nil {
+		for _, e := range err.Errors {
+			t.Errorf("code: %s, message: %s", e.Code, e.Message)
+		}
+	}
+	filename := fmt.Sprintf("%v%v.pdf", api.Endpoint(Invoice.ResourceInvoice), invoices[0].Id)
+	createFileError := os.WriteFile(filename, invoice, 0666)
 	if createFileError != nil {
-		fmt.Println(createFileError)
+		t.Errorf("createFileError: %s", createFileError)
 	}
 }
 
 func TestInvoiceGetQrcode(t *testing.T) {
 	var params = map[string]interface{}{}
-	params["limit"] = rand.Intn(100)
+	params["limit"] = 1
 
 	var paramsQrcode = map[string]interface{}{}
 	paramsQrcode["size"] = 12
 
-	invoice, err := Invoice.Qrcode("6543381610102784", paramsQrcode)
+	invoices, _, err := Invoice.Page(params)
 	if err.Errors != nil {
 		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+			t.Errorf("code: %s, message: %s", e.Code, e.Message)
 		}
 	}
-	filename := fmt.Sprintf("%v%v.png", api.Endpoint(Invoice.ResourceInvoice), "6543381610102784")
-	createFileError := ioutil.WriteFile(filename, invoice, 0666)
-	if createFileError != nil {
-		fmt.Println(createFileError)
+
+	invoice, err := Invoice.Qrcode(invoices[0].Id, paramsQrcode)
+	if err.Errors != nil {
+		for _, e := range err.Errors {
+			t.Errorf("code: %s, message: %s", e.Code, e.Message)
+		}
 	}
-}
-
-func TestWorkspaceReplaceQuery(t *testing.T) {
-	var params = map[string]interface{}{}
-	params["limit"] = 1
-
-	invoices := Invoice.Query(params, User.ExampleOrganization.Replace("4690697751887872"))
-	for invoice := range invoices {
-		fmt.Println("invoice's id: ", invoice.Id)
+	filename := fmt.Sprintf("%v%v.png", api.Endpoint(Invoice.ResourceInvoice), invoices[0].Id)
+	createFileError := os.WriteFile(filename, invoice, 0666)
+	if createFileError != nil {
+		t.Errorf("createFileError: %s", createFileError)
 	}
 }
 
@@ -180,9 +244,21 @@ func TestEventQuery(t *testing.T) {
 	params["isDelivered"] = true
 	params["limit"] = 300
 
-	events := Event.Query(params)
+	events, err := Event.Query(params)
+
+	go func() {
+		for err := range err {
+			if err.Errors != nil {
+				for _, e := range err.Errors {
+					t.Errorf("code: %s, message: %s", e.Code, e.Message)
+				}
+			}
+		}
+	}()
 
 	for event := range events {
-		fmt.Println(event.Id)
+		if event.Id == "" {
+			t.Errorf("event.Id is empty")
+		}
 	}
 }

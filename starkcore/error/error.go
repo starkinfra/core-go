@@ -25,13 +25,16 @@ type StarkErrors struct {
 	Errors []StarkError
 }
 
-var starkError map[string][]StarkError
-var errs []StarkError
-
 func InputError(message string) StarkErrors {
+	var starkError map[string][]StarkError
+	var errs []StarkError
+
 	err := json.Unmarshal([]byte(message), &starkError)
 	if err != nil {
-		panic(err)
+		return StarkErrors{Errors: []StarkError{{
+			Code:    "inputError",
+			Message: fmt.Sprintf("Input error: %v", err.Error()),
+		}}}
 	}
 	for _, errors := range starkError["errors"] {
 		errs = append(errs, StarkError{

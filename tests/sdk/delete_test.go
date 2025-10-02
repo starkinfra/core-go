@@ -1,18 +1,21 @@
 package sdk
 
 import (
-	"fmt"
 	Boleto "github.com/starkinfra/core-go/tests/utils/boleto"
+	"github.com/starkinfra/core-go/tests/utils/examples"
 	"testing"
 )
 
-func TestBoletoCancel(t *testing.T) {
+func TestBoletoCreateAndCancel(t *testing.T) {
+	createdBoleto, err := Boleto.Create(examples.ExampleBoleto())
+	if err.Errors != nil {
+		t.Errorf("err: %s", err.Errors)
+	}
 
-	boleto, err := Boleto.Cancel("4537841761648640")
+	_, err = Boleto.Cancel(createdBoleto[0].Id)
 	if err.Errors != nil {
 		for _, e := range err.Errors {
-			panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
+			t.Errorf("code: %s, message: %s", e.Code, e.Message)
 		}
 	}
-	fmt.Println(boleto)
 }
