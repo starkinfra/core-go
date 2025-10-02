@@ -6,6 +6,7 @@ import (
 	"github.com/starkinfra/core-go/starkcore/utils/rest"
 	"github.com/starkinfra/core-go/tests/utils"
 	User "github.com/starkinfra/core-go/tests/utils/user"
+	Error "github.com/starkinfra/core-go/starkcore/error"
 )
 
 //	Webhook Event struct
@@ -34,10 +35,9 @@ type Event struct {
 var object Event
 var resourceEvent = map[string]string{"name": "Event"}
 
-func Query(params map[string]interface{}) chan Event {
-	b := make(chan Event)
-
-	c := rest.GetStream(
+func Query(params map[string]interface{}) (chan Event, chan Error.StarkErrors) {
+	eventChannel := make(chan Event)
+	streamChannel, errChannel := rest.GetStream(
 		utils.SdkVersion,
 		hosts.Bank,
 		utils.ApiVersion,
@@ -48,15 +48,15 @@ func Query(params map[string]interface{}) chan Event {
 		params,
 	)
 	go func() {
-		for were := range c {
+		for were := range streamChannel {
 			wereByte, _ := json.Marshal(were)
 			err := json.Unmarshal(wereByte, &object)
 			if err != nil {
 				print(err)
 			}
-			b <- object
+			eventChannel <- object
 		}
-		close(b)
+		close(eventChannel)
 	}()
-	return b
+	return eventChannel, errChannel
 }

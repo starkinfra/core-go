@@ -79,6 +79,29 @@ func Create(invoices []Invoice) ([]Invoice, Error.StarkErrors) {
 	return invoices, err
 }
 
+func Page(params map[string]interface{}) ([]Invoice, string, Error.StarkErrors) {
+	page, cursor, err := rest.GetPage(
+		utils.SdkVersion,
+		hosts.Bank,
+		utils.ApiVersion,
+		utils.Language,
+		utils.Timeout,
+		User.ExampleProjectBank,
+		ResourceInvoice,
+		params,
+	)
+
+	if err.Errors != nil {
+		return []Invoice{}, "", err
+	}
+	unmarshalError := json.Unmarshal(page, &invoices)
+	if unmarshalError != nil {
+		return []Invoice{}, "", err
+	}
+	return invoices, string(cursor), err
+}
+
+
 func CreateWithUser(invoices []Invoice, user user.User) ([]Invoice, Error.StarkErrors) {
 	create, err := rest.PostMulti(
 		utils.SdkVersion,
@@ -101,9 +124,9 @@ func CreateWithUser(invoices []Invoice, user user.User) ([]Invoice, Error.StarkE
 	return invoices, err
 }
 
-func Query(params map[string]interface{}, user user.User) chan Invoice {
-	b := make(chan Invoice)
-	c := rest.GetStream(
+func Query(params map[string]interface{}, user user.User) (chan Invoice, chan Error.StarkErrors) {
+	invoiceChannel := make(chan Invoice)
+	streamChannel, errChannel := rest.GetStream(
 		utils.SdkVersion,
 		hosts.Bank,
 		utils.ApiVersion,
@@ -114,17 +137,17 @@ func Query(params map[string]interface{}, user user.User) chan Invoice {
 		params,
 	)
 	go func() {
-		for were := range c {
+		for were := range streamChannel {
 			wereByte, _ := json.Marshal(were)
 			err := json.Unmarshal(wereByte, &invoice)
 			if err != nil {
 				print(err)
 			}
-			b <- invoice
+			invoiceChannel <- invoice
 		}
-		close(b)
+		close(invoiceChannel)
 	}()
-	return b
+	return invoiceChannel, errChannel
 }
 
 func Update(id string) (Invoice, Error.StarkErrors) {

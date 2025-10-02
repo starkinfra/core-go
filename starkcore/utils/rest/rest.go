@@ -32,7 +32,7 @@ func GetPage(sdkVersion string, host string, apiVersion string, language string,
 	}
 	unmarshalError := json.Unmarshal(response.Content, &data)
 	if unmarshalError != nil {
-		panic(unmarshalError)
+		return nil, "", Error.UnknownError(string(response.Content))
 	}
 	cursor := data["cursor"]
 	jsonBytes, _ := json.Marshal(data[api.LastNamePlural(resource)])
@@ -42,11 +42,11 @@ func GetPage(sdkVersion string, host string, apiVersion string, language string,
 	return jsonBytes, cursor.(string), err
 }
 
-func GetStream(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, query map[string]interface{}) chan map[string]interface{} {
+func GetStream(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, query map[string]interface{}) (chan map[string]interface{}, chan Error.StarkErrors) {
 	channel := make(chan map[string]interface{})
+	errorChannel := make(chan Error.StarkErrors, 1)
+
 	isNilCursor := false
-	var response []map[string]interface{}
-	newResponse := make([]map[string]interface{}, len(response))
 
 	limitQuery := make(map[string]interface{})
 	for k, v := range query {
@@ -62,6 +62,7 @@ func GetStream(sdkVersion string, host string, apiVersion string, language strin
 
 	go func() {
 		defer close(channel)
+		defer close(errorChannel)
 		for _ = 0; (limitQuery["limit"] == nil || limit > 0) && !isNilCursor; {
 			entities, cursor, err := GetPage(
 				sdkVersion,
@@ -74,16 +75,16 @@ func GetStream(sdkVersion string, host string, apiVersion string, language strin
 				limitQuery,
 			)
 			if err.Errors != nil {
-				for _, e := range err.Errors {
-					panic(fmt.Sprintf("code: %s, message: %s", e.Code, e.Message))
-				}
+				errorChannel <- err
+				return
 			}
-			copy(newResponse, response)
-			unmarshalErr := json.Unmarshal(entities, &newResponse)
+			var response []map[string]interface{}
+			unmarshalErr := json.Unmarshal(entities, &response)
 			if unmarshalErr != nil {
-				panic(unmarshalErr)
+				errorChannel <- Error.UnknownError(unmarshalErr.Error())
+				return
 			}
-			for _, data := range newResponse {
+			for _, data := range response {
 				channel <- data
 			}
 			if limit != 0 {
@@ -96,7 +97,7 @@ func GetStream(sdkVersion string, host string, apiVersion string, language strin
 			}
 		}
 	}()
-	return channel
+	return channel, errorChannel
 }
 
 func GetId(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, id string, query map[string]interface{}) ([]byte, Error.StarkErrors) {
@@ -120,7 +121,7 @@ func GetId(sdkVersion string, host string, apiVersion string, language string, t
 	}
 	unmarshalError := json.Unmarshal(response.Content, &data)
 	if unmarshalError != nil {
-		panic(unmarshalError)
+		return nil, Error.UnknownError(string(response.Content))
 	}
 	jsonBytes, _ := json.Marshal(data[api.LastName(resource)])
 	return jsonBytes, err
@@ -178,7 +179,7 @@ func GetSubResource(sdkVersion string, host string, apiVersion string, language 
 	}
 	unmarshalError := json.Unmarshal(response.Content, &data)
 	if unmarshalError != nil {
-		panic(unmarshalError)
+		return nil, Error.UnknownError(string(response.Content))
 	}
 	jsonBytes, _ := json.Marshal(data[api.LastName(subResourceName)])
 	return jsonBytes, err
@@ -226,7 +227,7 @@ func PostSingle(sdkVersion string, host string, apiVersion string, language stri
 	}
 	unmarshalError := json.Unmarshal(response.Content, &data)
 	if unmarshalError != nil {
-		panic(unmarshalError)
+		return nil, Error.UnknownError(string(response.Content))
 	}
 	jsonBytes, _ := json.Marshal(data[api.LastName(resource)])
 	return jsonBytes, err
@@ -258,7 +259,7 @@ func PostSubResource(sdkVersion string, host string, apiVersion string, user use
 	}
 	unmarshalError := json.Unmarshal(response.Content, &data)
 	if unmarshalError != nil {
-		panic(unmarshalError)
+		return nil, Error.UnknownError(string(response.Content))
 	}
 	jsonBytes, _ := json.Marshal(data[api.LastName(subResource)])
 	return jsonBytes, err
@@ -285,7 +286,7 @@ func DeleteId(sdkVersion string, host string, apiVersion string, language string
 	}
 	unmarshalError := json.Unmarshal(response.Content, &data)
 	if unmarshalError != nil {
-		panic(unmarshalError)
+		return nil, Error.UnknownError(string(response.Content))
 	}
 	resp, _ := json.Marshal(data[api.LastName(resource)])
 	return resp, err
@@ -312,7 +313,7 @@ func PatchId(sdkVersion string, host string, apiVersion string, language string,
 	}
 	unmarshalError := json.Unmarshal(response.Content, &data)
 	if unmarshalError != nil {
-		panic(unmarshalError)
+		return nil, Error.UnknownError(string(response.Content))
 	}
 	jsonBytes, _ := json.Marshal(data[api.LastName(resource)])
 	return jsonBytes, err
@@ -331,7 +332,7 @@ func GetRaw(sdkVersion string, host string, apiVersion string, language string, 
 		timeout,
 		query,
 		prefix,
-		false,
+		throwError,
 	)
 	if err.Errors != nil {
 		return response, err
@@ -352,7 +353,7 @@ func PostRaw(sdkVersion string, host string, apiVersion string, language string,
 		timeout,
 		query,
 		prefix,
-		false,
+		throwError,
 	)
 	if err.Errors != nil {
 		return response, err
@@ -373,7 +374,7 @@ func PatchRaw(sdkVersion string, host string, apiVersion string, language string
 		timeout,
 		query,
 		prefix,
-		false,
+		throwError,
 	)
 	if err.Errors != nil {
 		return response, err
@@ -394,7 +395,7 @@ func PutRaw(sdkVersion string, host string, apiVersion string, language string, 
 		timeout,
 		query,
 		prefix,
-		false,
+		throwError,
 	)
 	if err.Errors != nil {
 		return response, err
@@ -415,7 +416,7 @@ func DeleteRaw(sdkVersion string, host string, apiVersion string, language strin
 		timeout,
 		nil,
 		prefix,
-		false,
+		throwError,
 	)
 	if err.Errors != nil {
 		return response, err

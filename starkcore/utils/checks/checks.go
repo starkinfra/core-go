@@ -4,35 +4,36 @@ import (
 	"fmt"
 	"github.com/starkbank/ecdsa-go/v2/ellipticcurve/privatekey"
 	"github.com/starkinfra/core-go/starkcore/environment"
+	Error "github.com/starkinfra/core-go/starkcore/error"
 	"reflect"
 	"strings"
 )
 
-func CheckEnvironment(env string) string {
+func CheckEnvironment(env string) (string, Error.StarkErrors) {
 	var acceptedEnvironments []string
 	v := reflect.ValueOf(environment.Environments)
 	for i := 0; i < v.NumField(); i++ {
 		acceptedEnvironments = append(acceptedEnvironments, v.Field(i).String())
 		if env == v.Field(i).Interface() {
-			return env
+			return env, Error.StarkErrors{}
 		}
 	}
-	panic(fmt.Sprintf("Select a valid environment: %v", strings.Join(acceptedEnvironments, " or ")))
+	return "", Error.UnknownError(fmt.Sprintf("Select a valid environment: %v", strings.Join(acceptedEnvironments, " or ")))
 }
 
-func CheckPrivateKey(pem string) string {
+func CheckPrivateKey(pem string) (string, Error.StarkErrors) {
 	if privatekey.FromPem(pem).Curve.Name == "secp256k1" {
-		return pem
+		return pem, Error.StarkErrors{}
 	}
-	panic("Private-key must be valid secp256k1 ECDSA string in pem format")
+	return "", Error.UnknownError("Private-key must be valid secp256k1 ECDSA string in pem format")
 }
 
-func CheckLanguage(language string) string {
+func CheckLanguage(language string) (string, Error.StarkErrors) {
 	acceptedLanguages := []string{"en-US", "pt-BR"}
 	for _, validLanguages := range acceptedLanguages {
 		if validLanguages == language {
-			return language
+			return language, Error.StarkErrors{}
 		}
 	}
-	panic(fmt.Sprintf("Language must be one from %v", strings.Join(acceptedLanguages, ", ")))
+	return "", Error.UnknownError(fmt.Sprintf("Language must be one from %v", strings.Join(acceptedLanguages, ", ")))
 }

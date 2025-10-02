@@ -13,6 +13,10 @@ Given a version number MAJOR.MINOR.PATCH, increment:
 
 
 ## [Unreleased]
+### Changed
+- getStream method to return separate error channel
+### Removed
+- panics from code
 
 ## [0.2.3] - 2024-07-15
 ### Added

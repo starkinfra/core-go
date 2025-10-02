@@ -9,7 +9,7 @@ import (
 	"github.com/starkinfra/core-go/starkcore/user/user"
 	"github.com/starkinfra/core-go/starkcore/utils/checks"
 	Url "github.com/starkinfra/core-go/starkcore/utils/url"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -25,7 +25,10 @@ type Response struct {
 func Fetch(host string, sdkVersion string, user user.User, method string, path string, payload interface{}, apiVersion string, language string, timeout int, query map[string]interface{}, prefix string, throwError bool) (Response, Error.StarkErrors) {
 	var url string
 	var body string
-	language = checks.CheckLanguage(language)
+	language, languageErr := checks.CheckLanguage(language)
+	if languageErr.Errors != nil {
+		return Response{}, languageErr
+	}
 
 	if payload != "" {
 		bytes, _ := json.Marshal(payload)
@@ -47,7 +50,7 @@ func Fetch(host string, sdkVersion string, user user.User, method string, path s
 	}
 	req, err := http.NewRequest(method, url, strings.NewReader(body))
 	if err != nil {
-		panic(err)
+		return Response{}, Error.UnknownError(err.Error())
 	}
 
 	req.Header.Add("User-Agent", agent)
@@ -57,17 +60,17 @@ func Fetch(host string, sdkVersion string, user user.User, method string, path s
 
 	rawResponse, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		return Response{}, Error.UnknownError(err.Error())
 	}
 
-	responseContent, err := ioutil.ReadAll(rawResponse.Body)
+	responseContent, err := io.ReadAll(rawResponse.Body)
 	if err != nil {
-		panic(err)
+		return Response{}, Error.UnknownError(err.Error())
 	}
 
 	response := Response{Status: rawResponse.StatusCode, Content: responseContent}
 
-	if throwError != false {
+	if throwError {
 		if response.Status == 400 {
 			err := Error.InputError(string(response.Content))
 			return Response{}, err
