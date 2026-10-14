@@ -100,6 +100,9 @@ func LastNamePlural(resource map[string]string) string {
 	if strings.HasSuffix(plural, "-log") == true {
 		return plural[len(plural)-3:] + "s"
 	}
+	if strings.HasSuffix(plural, "ch") || strings.HasSuffix(plural, "sh") || strings.HasSuffix(plural, "x") {
+		return plural + "es"
+	}
 	return plural + "s"
 }
 
