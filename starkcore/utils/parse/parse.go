@@ -81,7 +81,7 @@ func getPublicKey(sdkVersion, host, apiVersion string, language string, timeout 
 	mapPem := make(map[string]interface{})
 	data := map[string]interface{}{}
 
-	publicKey := cache.Cache["stark-public-key"]
+	publicKey := cache.Get("stark-public-key")
 	if publicKey != nil && refresh == false {
 		return publicKey, Error.StarkErrors{}
 	}
@@ -110,6 +110,6 @@ func getPublicKey(sdkVersion, host, apiVersion string, language string, timeout 
 	json.Unmarshal([]byte(fmt.Sprintf("%v", data["cursor"])), &mapPem)
 	content := fmt.Sprintf("%v", data["publicKeys"].([]interface{})[0].(map[string]interface{})["content"])
 	publicKey = publickey.FromPem(content)
-	cache.Cache["stark-public-key"] = publicKey
+	cache.Set("stark-public-key", publicKey)
 	return publicKey, Error.StarkErrors{}
 }

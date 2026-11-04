@@ -13,6 +13,8 @@ Given a version number MAJOR.MINOR.PATCH, increment:
 
 
 ## [Unreleased]
+### Fixed
+- concurrent read and write of the public key cache, which could crash the process with "concurrent map writes"
 
 ## [1.2.0] - 2026-10-15
 ### Added
