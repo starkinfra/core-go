@@ -206,6 +206,27 @@ func PostMulti(sdkVersion string, host string, apiVersion string, language strin
 	return api.FromApiJson(response.Content, resource), err
 }
 
+func PatchMulti(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, entity interface{}, query map[string]interface{}) ([]byte, Error.StarkErrors) {
+	response, err := request.Fetch(
+		host,
+		sdkVersion,
+		user,
+		"PATCH",
+		api.Endpoint(resource),
+		api.ApiJson(entity, resource),
+		apiVersion,
+		language,
+		timeout,
+		query,
+		"",
+		true,
+	)
+	if err.Errors != nil {
+		return nil, err
+	}
+	return api.FromApiJson(response.Content, resource), err
+}
+
 func PostSingle(sdkVersion string, host string, apiVersion string, language string, timeout int, user user.User, resource map[string]string, entity interface{}, query map[string]interface{}) ([]byte, Error.StarkErrors) {
 	data := map[string]interface{}{}
 	response, err := request.Fetch(

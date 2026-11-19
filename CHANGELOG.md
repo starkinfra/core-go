@@ -13,6 +13,8 @@ Given a version number MAJOR.MINOR.PATCH, increment:
 
 
 ## [Unreleased]
+### Added
+- PatchMulti function, the PATCH counterpart of PostMulti, to update several resources in one request
 
 ## [1.2.0] - 2026-10-15
 ### Added
